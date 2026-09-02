@@ -1,0 +1,267 @@
+import Image from 'next/image'
+import Link from 'next/link'
+import { PlayCircle, ShieldCheck, Zap, Users, ArrowRight, CheckCircle2, BookOpen } from 'lucide-react'
+import { prisma } from '@/lib/prisma'
+
+export const revalidate = 60
+
+export default async function Home() {
+  const featuredCourses = await prisma.course.findMany({
+    where: { isPublished: true },
+    take: 3,
+    include: {
+      grade: true,
+      _count: { select: { enrollments: true } }
+    },
+    orderBy: { createdAt: 'desc' }
+  })
+  
+  const hueRotates = ['', 'hue-rotate-90', 'hue-rotate-180']
+
+  return (
+    <div className="flex flex-col min-h-screen overflow-x-hidden bg-white">
+      {/* Hero Section */}
+      <section className="relative pt-16 md:pt-24 lg:pt-32 pb-24 border-b border-gray-200">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+        <div className="container relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div className="max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 text-gray-800 text-xs font-bold uppercase tracking-widest mb-6">
+                <span className="flex h-1.5 w-1.5 bg-purple-600 motion-safe:animate-pulse"></span>
+                10.000+ Học Sinh
+              </div>
+              <h1 className="text-4xl md:text-5xl lg:text-[3.5rem] font-bold text-blue-900 leading-[1.2] mb-6 tracking-tight">
+                Toán Thầy Công. <br className="hidden md:block" />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-600 font-extrabold">Chinh phục điểm 9+</span>
+              </h1>
+              <p className="text-lg text-gray-600 mb-10 leading-relaxed max-w-xl">
+                Học Toán bằng bản chất, không giải mẹo, không học vẹt. Lộ trình đào tạo chuyên sâu giúp học sinh THCS & THPT xây dựng tư duy logic vững chắc và bứt phá điểm số trong mọi kỳ thi.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link href="/login" className="inline-flex items-center justify-center gap-2 bg-blue-900 px-8 py-4 text-sm font-medium text-white transition-colors hover:bg-purple-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-900 focus-visible:ring-offset-2">
+                  Bắt đầu học ngay
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link href="#features" className="inline-flex items-center justify-center gap-2 border border-gray-300 bg-white px-8 py-4 text-sm font-medium text-gray-900 transition-colors hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2">
+                  <PlayCircle className="h-4 w-4 text-gray-500" />
+                  Phương pháp
+                </Link>
+              </div>
+            </div>
+            <div className="relative lg:h-[600px] flex justify-center lg:justify-end">
+              <div className="relative w-full max-w-lg aspect-square lg:aspect-auto lg:w-[500px] lg:h-[500px] bg-slate-100 overflow-hidden shadow-sm">
+                <Image
+                  src="/images/hero-v2.jpg"
+                  alt=""
+                  aria-hidden="true"
+                  fill
+                  className="object-cover mix-blend-multiply"
+                  priority
+                />
+              </div>
+              <div className="absolute -bottom-6 -left-6 bg-white p-6 shadow-xl border border-gray-100 flex flex-col gap-1">
+                <ShieldCheck className="h-6 w-6 text-purple-600 mb-2" />
+                <p className="text-sm font-heading font-bold text-blue-900 uppercase tracking-widest">Đảm bảo</p>
+                <p className="text-sm text-gray-500 font-light">Hiệu quả 100%</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="py-24 bg-white border-b border-gray-200">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-16 md:text-center max-w-3xl mx-auto">
+            <h2 className="text-xs font-bold text-purple-600 uppercase tracking-widest mb-3">Triết lý thiết kế khóa học</h2>
+            <h3 className="text-3xl md:text-4xl font-bold text-blue-900 mb-6">Mọi yếu tố gây nhiễu đều bị loại bỏ. Bạn chỉ tập trung vào cốt lõi của Toán học.</h3>
+          </div>
+          <div className="grid md:grid-cols-3 border-t border-l border-gray-100">
+            {/* Feature 1 */}
+            <div className="group p-8 md:p-12 border-b border-r border-gray-100 bg-white hover:bg-slate-50 transition-colors">
+              <div className="flex items-center justify-between mb-8">
+                <div className="h-12 w-12 bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-900">
+                  <PlayCircle className="h-5 w-5" />
+                </div>
+                <span className="text-4xl font-light text-gray-200 group-hover:text-purple-200 transition-colors">01</span>
+              </div>
+              <h4 className="text-xl font-bold text-blue-900 mb-4">Chất lượng sắc nét</h4>
+              <p className="text-gray-600 leading-relaxed">Hình ảnh độ phân giải cao, trình bày bài giảng dưới dạng sơ đồ tư duy phẳng, tối ưu hóa việc ghi nhớ.</p>
+            </div>
+            
+            {/* Feature 2 */}
+            <div className="group p-8 md:p-12 border-b border-r border-gray-100 bg-white hover:bg-slate-50 transition-colors">
+              <div className="flex items-center justify-between mb-8">
+                <div className="h-12 w-12 bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-900">
+                  <Zap className="h-5 w-5" />
+                </div>
+                <span className="text-4xl font-light text-gray-200 group-hover:text-purple-200 transition-colors">02</span>
+              </div>
+              <h4 className="text-xl font-bold text-blue-900 mb-4">Lộ trình tinh gọn</h4>
+              <p className="text-gray-600 leading-relaxed">Lược bỏ các bài tập lặp lại vô nghĩa. Chỉ giữ lại những dạng bài có tính hệ thống và bao quát.</p>
+            </div>
+            
+            {/* Feature 3 */}
+            <div className="group p-8 md:p-12 border-b border-r border-gray-100 bg-white hover:bg-slate-50 transition-colors">
+              <div className="flex items-center justify-between mb-8">
+                <div className="h-12 w-12 bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-900">
+                  <Users className="h-5 w-5" />
+                </div>
+                <span className="text-4xl font-light text-gray-200 group-hover:text-purple-200 transition-colors">03</span>
+              </div>
+              <h4 className="text-xl font-bold text-blue-900 mb-4">Môi trường chuyên nghiệp</h4>
+              <p className="text-gray-600 leading-relaxed">Cộng đồng học sinh chất lượng cao, chia sẻ tài liệu và giải đáp thắc mắc trên tinh thần học thuật.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Courses Section */}
+      <section id="courses" className="py-24 bg-white">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+            <div>
+              <h2 className="text-3xl md:text-4xl font-heading font-medium text-blue-900 mb-3">Chương trình đào tạo</h2>
+              <p className="text-gray-600 text-lg font-light">Các khóa học được chuẩn hóa theo tiêu chuẩn đánh giá năng lực mới.</p>
+            </div>
+            <Link href="/courses" className="text-purple-600 font-medium hover:text-purple-700 flex items-center gap-2 group">
+              Xem toàn bộ <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {featuredCourses.map((course, index) => {
+              const hueClass = hueRotates[index % hueRotates.length]
+              
+              return (
+              <Link href={`/courses/${course.slug}`} key={course.id} className="group bg-white border border-gray-200 hover:border-purple-300 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 flex flex-col h-full rounded-sm overflow-hidden block">
+                <div className="relative h-64 w-full bg-slate-100 flex items-center justify-center border-b border-gray-100 overflow-hidden">
+                  <Image
+                    src="/images/thumbnail-v2.jpg"
+                    alt={course.title}
+                    fill
+                    className={`object-cover mix-blend-multiply opacity-90 group-hover:scale-105 transition-transform duration-700 ${hueClass}`}
+                  />
+                  <div className="absolute top-4 left-4 bg-white px-2 py-1 text-xs font-bold text-blue-900 tracking-widest border border-gray-200 shadow-sm">
+                    {course.grade.name.toUpperCase()}
+                  </div>
+                </div>
+                <div className="p-8 flex flex-col flex-1">
+                  <h3 className="text-2xl font-bold text-blue-900 mb-3 group-hover:text-purple-600 transition-colors line-clamp-2">
+                    {course.title}
+                  </h3>
+                  <p className="text-gray-600 mb-6 font-light line-clamp-3 leading-relaxed flex-1">
+                    {course.description}
+                  </p>
+                  
+                  <div className="flex items-center justify-between pt-6 border-t border-gray-100">
+                    <span className="text-xs text-gray-500 font-medium tracking-wide uppercase">
+                      {course._count.enrollments > 0 ? `${course._count.enrollments} Học viên` : 'Mới ra mắt'}
+                    </span>
+                    <ArrowRight className="h-5 w-5 text-gray-300 group-hover:text-purple-600 group-hover:translate-x-1 transition-all" />
+                  </div>
+                </div>
+              </Link>
+              )
+            })}
+            
+            {featuredCourses.length < 3 && (
+              <div className="group bg-slate-50 border border-dashed border-gray-300 flex flex-col h-full rounded-sm overflow-hidden flex items-center justify-center p-8 text-center min-h-[400px]">
+                <div className="w-16 h-16 bg-white border border-gray-200 rounded-full flex items-center justify-center mb-4 text-gray-400 group-hover:text-blue-900 transition-colors">
+                  <BookOpen className="h-8 w-8" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Khóa học tiếp theo</h3>
+                <p className="text-gray-500 font-light mb-6">Chúng tôi đang biên soạn một chương trình đặc biệt hoàn toàn mới. Hãy đón chờ!</p>
+                <span className="inline-block bg-white border border-gray-200 px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-widest">
+                  Sắp ra mắt
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Reviews Section */}
+      <section id="reviews" className="py-24 bg-slate-50 border-t border-gray-200">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-blue-900 mb-4">Học viên nói gì?</h2>
+            <p className="text-gray-600 text-lg font-light max-w-2xl mx-auto">
+              Hàng ngàn học sinh đã thay đổi tư duy và bứt phá điểm số sau khi tham gia lộ trình học tập Swiss Style.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                quote: "Em từng rất sợ hình học không gian, nhưng phương pháp trực quan 3D của thầy đã giúp em nhìn ra vấn đề ngay lập tức. Đề thi năm nay em tự tin 9+.",
+                author: "Nguyễn Tuấn Anh",
+                school: "THPT Chuyên KHTN",
+                score: "Toán 9.2 ĐGNL"
+              },
+              {
+                quote: "Không giải mẹo, học đến đâu chắc đến đấy. Lộ trình của thầy giúp em tiết kiệm rất nhiều thời gian ôn thi vì chỉ cần học đúng trọng tâm bản chất.",
+                author: "Trần Minh Châu",
+                school: "THPT Chu Văn An",
+                score: "Toán 9.6 THPT QG"
+              },
+              {
+                quote: "Điều em thích nhất là môi trường học thuật nghiêm túc. Các anh chị trợ giảng hỗ trợ 24/7 siêu nhiệt tình mỗi khi em kẹt bài khó.",
+                author: "Lê Hoàng Hải",
+                school: "THPT Lương Thế Vinh",
+                score: "Học viên Lớp 11"
+              }
+            ].map((review, i) => (
+              <div key={i} className="bg-white p-8 border border-gray-200 hover:border-purple-300 transition-colors shadow-sm relative">
+                <div className="text-purple-200 mb-6">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14.017 21L16.411 14.286C14.618 14.072 13.25 12.585 13.25 10.75C13.25 8.679 14.929 7 17 7C19.071 7 20.75 8.679 20.75 10.75C20.75 14.893 17.5 19.393 14.017 21ZM3.267 21L5.661 14.286C3.868 14.072 2.5 12.585 2.5 10.75C2.5 8.679 4.179 7 6.25 7C8.321 7 10 8.679 10 10.75C10 14.893 6.75 19.393 3.267 21Z" />
+                  </svg>
+                </div>
+                <p className="text-gray-700 italic mb-8 leading-relaxed line-clamp-4">"{review.quote}"</p>
+                <div className="flex items-center justify-between border-t border-gray-100 pt-4">
+                  <div>
+                    <h4 className="font-bold text-blue-900">{review.author}</h4>
+                    <p className="text-xs text-gray-500">{review.school}</p>
+                  </div>
+                  <div className="bg-green-50 text-green-700 px-3 py-1 text-xs font-bold uppercase tracking-wider border border-green-100">
+                    {review.score}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-24 bg-blue-900 border-t border-blue-800">
+        <div className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-4xl md:text-5xl font-heading font-semibold text-white mb-6">Xây dựng nền tảng. Chinh phục đỉnh cao.</h2>
+          <p className="text-blue-200 text-lg md:text-xl mb-12 max-w-2xl mx-auto font-light">
+            Tham gia cộng đồng học thuật chuyên nghiệp nhất ngay hôm nay. Trải nghiệm phương pháp tư duy Swiss Style.
+          </p>
+          <div className="flex justify-center">
+            <Link href="/login" className="inline-flex items-center justify-center gap-2 bg-white px-10 py-5 text-sm font-bold uppercase tracking-widest text-blue-900 transition-colors hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-blue-900">
+              Đăng ký tài khoản
+            </Link>
+          </div>
+          <div className="mt-12 flex flex-wrap justify-center gap-x-12 gap-y-4 text-sm text-blue-200 font-light">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-purple-400" />
+              <span>Học thử miễn phí</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-purple-400" />
+              <span>Thanh toán 1 lần</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4 text-purple-400" />
+              <span>Hỗ trợ kỹ thuật 24/7</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}

@@ -1,0 +1,208 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Grade {
+  id        String   @id @default(uuid())
+  name      String
+  orderNum  Int      @default(0)
+  courses   Course[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Subject {
+  id        String   @id @default(uuid())
+  name      String
+  courses   Course[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+model User {
+  id          String   @id @default(uuid()) // Supabase Auth UUID
+  email       String   @unique
+  fullName    String
+  role        Role     @default(STUDENT)
+  
+  // Student CRM Info
+  dateOfBirth DateTime?
+  address     String?
+  phone       String?
+  
+  // Teacher Profile Info
+  avatarUrl   String?
+  bio         String?
+  
+  courses     Course[]      @relation("TeacherCourses")
+  enrollments Enrollment[]
+  comments    Comment[]
+  reviews     Review[]
+  usedCodes   ActivationCode[] @relation("UsedByStudent")
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Course {
+  id          String   @id @default(uuid())
+  title       String
+  slug        String   @unique
+  description String?
+  isPublished Boolean  @default(false)
+  tags        String[] // Tags (Postgres native string array)
+  
+  teacherId   String
+  teacher     User     @relation("TeacherCourses", fields: [teacherId], references: [id], onDelete: Cascade)
+  
+  subjectId   String
+  subject     Subject  @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+  
+  gradeId     String
+  grade       Grade    @relation(fields: [gradeId], references: [id], onDelete: Restrict)
+  
+  chapters        Chapter[]
+  enrollments     Enrollment[]
+  reviews         Review[]
+  activationCodes ActivationCode[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@index([teacherId])
+}
+
+model Chapter {
+  id        String   @id @default(uuid())
+  title     String
+  orderNum  Int      @default(0)
+  
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+  lessons   Lesson[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([courseId])
+}
+
+model Lesson {
+  id              String   @id @default(uuid())
+  title           String
+  slug            String
+  youtubeId       String
+  isPreview       Boolean  @default(false)
+  durationSeconds Int      @default(0)
+  orderNum        Int      @default(0)
+  
+  chapterId       String
+  chapter         Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  
+  resources       LessonResource[]
+  comments        Comment[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([chapterId, slug])
+  @@index([chapterId])
+}
+
+model LessonResource {
+  id          String   @id @default(uuid())
+  title       String
+  externalUrl String
+  
+  lessonId    String
+  lesson      Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ActivationCode {
+  id        String   @id @default(uuid())
+  code      String   @unique
+  isUsed    Boolean  @default(false)
+  
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+  usedById  String?
+  usedBy    User?    @relation("UsedByStudent", fields: [usedById], references: [id], onDelete: SetNull)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([code])
+}
+
+model Enrollment {
+  id               String   @id @default(uuid())
+  progress         Int      @default(0)
+  completedLessons String[] // Array of Lesson IDs
+  
+  studentId        String
+  student          User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  courseId         String
+  course           Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([studentId, courseId])
+  @@index([studentId])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  
+  lessonId  String
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  parentId  String?
+  parent    Comment? @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentReplies")
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  rating    Int
+  content   String?
+  
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+  studentId String
+  student   User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([courseId, studentId])
+}

@@ -38,12 +38,12 @@ export default async function Home() {
                 Học Toán bằng bản chất, không giải mẹo, không học vẹt. Lộ trình đào tạo chuyên sâu giúp học sinh THCS & THPT xây dựng tư duy logic vững chắc và bứt phá điểm số trong mọi kỳ thi.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/login" className="inline-flex items-center justify-center gap-2 bg-blue-900 px-8 py-4 text-sm font-medium text-white transition-colors hover:bg-purple-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-900 focus-visible:ring-offset-2">
-                  Bắt đầu học ngay
+                <Link href="/courses" className="inline-flex items-center justify-center gap-2 bg-blue-900 px-8 py-4 text-sm font-medium text-white transition-colors hover:bg-purple-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-900 focus-visible:ring-offset-2">
+                  Khám phá khóa học
                   <ArrowRight className="h-4 w-4" />
                 </Link>
-                <Link href="#features" className="inline-flex items-center justify-center gap-2 border border-gray-300 bg-white px-8 py-4 text-sm font-medium text-gray-900 transition-colors hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400 focus-visible:ring-offset-2">
-                  <PlayCircle className="h-4 w-4 text-gray-500" />
+                <Link href="#features" className="inline-flex items-center justify-center gap-2 border border-slate-200 bg-white px-8 py-4 text-sm font-semibold text-blue-950 transition-colors hover:bg-purple-50/50 hover:border-purple-200 hover:text-purple-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-900 focus-visible:ring-offset-2">
+                  <PlayCircle className="h-4 w-4 text-purple-600" />
                   Phương pháp
                 </Link>
               </div>
@@ -166,13 +166,13 @@ export default async function Home() {
             })}
             
             {featuredCourses.length < 3 && (
-              <div className="group bg-slate-50 border border-dashed border-gray-300 flex flex-col h-full rounded-sm overflow-hidden flex items-center justify-center p-8 text-center min-h-[400px]">
-                <div className="w-16 h-16 bg-white border border-gray-200 rounded-full flex items-center justify-center mb-4 text-gray-400 group-hover:text-blue-900 transition-colors">
+              <div className="group bg-purple-50/30 border border-dashed border-purple-200 flex flex-col h-full overflow-hidden items-center justify-center p-8 text-center min-h-[400px]">
+                <div className="w-16 h-16 bg-white border border-purple-100 rounded-full flex items-center justify-center mb-4 text-purple-600 shadow-2xs group-hover:scale-110 transition-transform">
                   <BookOpen className="h-8 w-8" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Khóa học tiếp theo</h3>
-                <p className="text-gray-500 font-light mb-6">Chúng tôi đang biên soạn một chương trình đặc biệt hoàn toàn mới. Hãy đón chờ!</p>
-                <span className="inline-block bg-white border border-gray-200 px-4 py-2 text-xs font-bold text-gray-400 uppercase tracking-widest">
+                <h3 className="text-xl font-extrabold text-blue-900 mb-2">Khóa học tiếp theo</h3>
+                <p className="text-slate-500 font-normal text-sm mb-6 max-w-xs">Chúng tôi đang biên soạn một chương trình đặc biệt hoàn toàn mới. Hãy đón chờ!</p>
+                <span className="inline-block bg-white border border-purple-200 px-4 py-1.5 text-xs font-bold text-purple-700 uppercase tracking-widest shadow-2xs">
                   Sắp ra mắt
                 </span>
               </div>
@@ -182,12 +182,13 @@ export default async function Home() {
       </section>
 
       {/* Reviews Section */}
-      <section id="reviews" className="py-24 bg-slate-50 border-t border-gray-200">
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section id="reviews" className="relative py-24 bg-white border-t border-slate-200/90 overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+        <div className="relative container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-blue-900 mb-4">Học viên nói gì?</h2>
-            <p className="text-gray-600 text-lg font-light max-w-2xl mx-auto">
-              Hàng ngàn học sinh đã thay đổi tư duy và bứt phá điểm số sau khi tham gia lộ trình học tập Swiss Style.
+            <h2 className="text-3xl md:text-4xl font-extrabold text-blue-900 mb-4 tracking-tight">Học viên nói gì?</h2>
+            <p className="text-slate-600 text-lg font-normal mx-auto max-w-2xl">
+              Hàng ngàn học sinh đã thay đổi tư duy và bứt phá điểm số sau khi tham gia lộ trình học tập.
             </p>
           </div>
 
@@ -212,19 +213,21 @@ export default async function Home() {
                 score: "Học viên Lớp 11"
               }
             ].map((review, i) => (
-              <div key={i} className="bg-white p-8 border border-gray-200 hover:border-purple-300 transition-colors shadow-sm relative">
-                <div className="text-purple-200 mb-6">
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M14.017 21L16.411 14.286C14.618 14.072 13.25 12.585 13.25 10.75C13.25 8.679 14.929 7 17 7C19.071 7 20.75 8.679 20.75 10.75C20.75 14.893 17.5 19.393 14.017 21ZM3.267 21L5.661 14.286C3.868 14.072 2.5 12.585 2.5 10.75C2.5 8.679 4.179 7 6.25 7C8.321 7 10 8.679 10 10.75C10 14.893 6.75 19.393 3.267 21Z" />
-                  </svg>
+              <div key={i} className="bg-white p-8 border border-slate-200/90 hover:border-purple-300 hover:shadow-md transition-all shadow-2xs relative flex flex-col justify-between">
+                <div>
+                  <div className="text-purple-200 mb-6">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M14.017 21L16.411 14.286C14.618 14.072 13.25 12.585 13.25 10.75C13.25 8.679 14.929 7 17 7C19.071 7 20.75 8.679 20.75 10.75C20.75 14.893 17.5 19.393 14.017 21ZM3.267 21L5.661 14.286C3.868 14.072 2.5 12.585 2.5 10.75C2.5 8.679 4.179 7 6.25 7C8.321 7 10 8.679 10 10.75C10 14.893 6.75 19.393 3.267 21Z" />
+                    </svg>
+                  </div>
+                  <p className="text-slate-600 italic mb-8 leading-relaxed line-clamp-4">&ldquo;{review.quote}&rdquo;</p>
                 </div>
-                <p className="text-gray-700 italic mb-8 leading-relaxed line-clamp-4">"{review.quote}"</p>
-                <div className="flex items-center justify-between border-t border-gray-100 pt-4">
+                <div className="flex items-center justify-between border-t border-slate-100 pt-4">
                   <div>
                     <h4 className="font-bold text-blue-900">{review.author}</h4>
-                    <p className="text-xs text-gray-500">{review.school}</p>
+                    <p className="text-xs text-slate-500">{review.school}</p>
                   </div>
-                  <div className="bg-green-50 text-green-700 px-3 py-1 text-xs font-bold uppercase tracking-wider border border-green-100">
+                  <div className="bg-purple-50 text-purple-700 px-3 py-1 text-xs font-bold uppercase tracking-wider border border-purple-200">
                     {review.score}
                   </div>
                 </div>
@@ -235,29 +238,29 @@ export default async function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 bg-blue-900 border-t border-blue-800">
+      <section className="py-24 bg-blue-900 border-t border-blue-950">
         <div className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl md:text-5xl font-heading font-semibold text-white mb-6">Xây dựng nền tảng. Chinh phục đỉnh cao.</h2>
-          <p className="text-blue-200 text-lg md:text-xl mb-12 max-w-2xl mx-auto font-light">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6 tracking-tight">Xây dựng nền tảng. Chinh phục đỉnh cao.</h2>
+          <p className="text-blue-100/80 text-lg md:text-xl mb-12 max-w-2xl mx-auto font-normal">
             Tham gia cộng đồng học thuật chuyên nghiệp nhất ngay hôm nay. Trải nghiệm phương pháp tư duy Swiss Style.
           </p>
           <div className="flex justify-center">
-            <Link href="/login" className="inline-flex items-center justify-center gap-2 bg-white px-10 py-5 text-sm font-bold uppercase tracking-widest text-blue-900 transition-colors hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-blue-900">
+            <Link href="/login" className="inline-flex items-center justify-center gap-2 bg-white px-10 py-5 text-sm font-bold uppercase tracking-widest text-blue-900 transition-all hover:bg-purple-50 hover:text-purple-700 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
               Đăng ký tài khoản
             </Link>
           </div>
-          <div className="mt-12 flex flex-wrap justify-center gap-x-12 gap-y-4 text-sm text-blue-200 font-light">
+          <div className="mt-12 flex flex-wrap justify-center gap-x-12 gap-y-4 text-sm text-blue-100/90 font-medium">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-purple-400" />
+              <CheckCircle2 className="h-4 w-4 text-purple-300" />
               <span>Học thử miễn phí</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-purple-400" />
+              <CheckCircle2 className="h-4 w-4 text-purple-300" />
               <span>Thanh toán 1 lần</span>
             </div>
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4 text-purple-400" />
-              <span>Hỗ trợ kỹ thuật 24/7</span>
+              <CheckCircle2 className="h-4 w-4 text-purple-300" />
+              <span>Hỗ trợ chuyên môn 24/7</span>
             </div>
           </div>
         </div>

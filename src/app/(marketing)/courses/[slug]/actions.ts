@@ -10,7 +10,12 @@ const activationSchema = z.object({
   courseId: z.string().uuid()
 })
 
-export async function activateCourseAction(prevState: any, formData: FormData) {
+export type ActionState = {
+  success: boolean
+  message?: string
+} | null
+
+export async function activateCourseAction(prevState: ActionState, formData: FormData): Promise<ActionState> {
   try {
     const supabase = await createClient()
     const { data: authData, error: authError } = await supabase.auth.getUser()
@@ -25,11 +30,11 @@ export async function activateCourseAction(prevState: any, formData: FormData) {
     // Validate
     const validatedFields = activationSchema.safeParse({ code, courseId })
     if (!validatedFields.success) {
-      return { success: false, message: validatedFields.error.errors[0].message }
+      return { success: false, message: validatedFields.error.issues[0]?.message || 'Dữ liệu không hợp lệ' }
     }
 
     // Prisma Transaction
-    const result = await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx) => {
       // 1. Kiểm tra mã kích hoạt
       const activationRecord = await tx.activationCode.findUnique({
         where: { code: validatedFields.data.code }
@@ -88,7 +93,8 @@ export async function activateCourseAction(prevState: any, formData: FormData) {
     
     return { success: true, message: 'Kích hoạt khóa học thành công!' }
 
-  } catch (error: any) {
-    return { success: false, message: error.message || 'Đã có lỗi xảy ra. Vui lòng thử lại.' }
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Đã có lỗi xảy ra. Vui lòng thử lại.'
+    return { success: false, message }
   }
 }

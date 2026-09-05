@@ -59,11 +59,12 @@ export default function OnboardingPage() {
 
           <div>
             <label className="mb-1 block text-sm font-medium text-gray-700">
-              Ngày sinh
+              Ngày sinh (dd/mm/yyyy)
             </label>
             <input
               name="dateOfBirth"
-              type="date"
+              type="text"
+              placeholder="dd/mm/yyyy"
               className={`w-full rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 ${
                 state.errors?.dateOfBirth ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
               }`}

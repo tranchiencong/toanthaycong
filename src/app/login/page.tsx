@@ -2,90 +2,108 @@
 
 import { useActionState } from 'react'
 import { authAction } from './actions'
+import Link from 'next/link'
+import { Logo } from '@/components/ui/Logo'
+import { Loader2 } from 'lucide-react'
 
 export default function LoginPage() {
   const [state, formAction, isPending] = useActionState(authAction, {})
 
   return (
-    <div className="flex h-screen w-full items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-xl">
-        <h1 className="mb-2 text-center text-3xl font-bold text-gray-900">
-          Toán Thầy Công
-        </h1>
-        <p className="mb-8 text-center text-sm text-gray-500">
-          Đăng nhập để vào không gian học tập
-        </p>
+    <div className="relative min-h-screen w-full flex items-center justify-center bg-white py-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      {/* Math Caro Grid Background */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
 
+      {/* Khung form lịch sự, chuẩn mực */}
+      <div className="relative z-10 w-full max-w-md bg-white border border-gray-200 rounded-xl p-8 sm:p-10 shadow-sm">
+        
+        {/* Logo Monogram tc */}
+        <div className="flex justify-center mb-5">
+          <Logo size="md" showText={false} />
+        </div>
+
+        {/* Tiêu đề tối giản cốt lõi */}
+        <h1 className="text-2xl font-bold text-center text-gray-900 mb-6">
+          Đăng nhập
+        </h1>
+
+        {/* Thông báo lỗi nếu có */}
         {state.message && (
-          <div className="mb-6 rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-100">
+          <div className="mb-5 p-3 text-xs text-rose-600 bg-rose-50 border border-rose-100 rounded-lg text-center font-medium">
             {state.message}
           </div>
         )}
 
-        <form action={formAction} className="flex flex-col gap-4">
+        <form action={formAction} className="space-y-4">
+          <input type="hidden" name="intent" value="login" />
+
           <div>
             <label
               htmlFor="email"
-              className="mb-1 block text-sm font-medium text-gray-700"
+              className="block text-xs font-semibold text-gray-700 mb-1.5"
             >
-              Email
+              Email <span className="text-red-500">*</span>
             </label>
             <input
               id="email"
               name="email"
               type="email"
+              required
+              autoFocus
               placeholder="nhapemail@gmail.com"
-              className={`w-full rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 ${
-                state.errors?.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
-              }`}
+              className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-900 focus:ring-1 focus:ring-blue-900 transition-colors"
             />
             {state.errors?.email && (
-              <p className="mt-1 text-xs text-red-500">{state.errors.email[0]}</p>
+              <p className="mt-1 text-xs text-rose-600">{state.errors.email[0]}</p>
             )}
           </div>
 
           <div>
-            <label
-              htmlFor="password"
-              className="mb-1 block text-sm font-medium text-gray-700"
-            >
-              Mật khẩu
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label
+                htmlFor="password"
+                className="block text-xs font-semibold text-gray-700"
+              >
+                Mật khẩu <span className="text-red-500">*</span>
+              </label>
+              <a
+                href="https://zalo.me"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-gray-500 hover:text-blue-900 transition-colors"
+              >
+                Quên mật khẩu?
+              </a>
+            </div>
             <input
               id="password"
               name="password"
               type="password"
+              required
               placeholder="••••••••"
-              className={`w-full rounded-lg border px-4 py-2 focus:outline-none focus:ring-2 ${
-                state.errors?.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500/20'
-              }`}
+              className="w-full px-3.5 py-2.5 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-900 focus:ring-1 focus:ring-blue-900 transition-colors"
             />
             {state.errors?.password && (
-              <p className="mt-1 text-xs text-red-500">{state.errors.password[0]}</p>
+              <p className="mt-1 text-xs text-rose-600">{state.errors.password[0]}</p>
             )}
           </div>
 
-          <div className="mt-4 flex gap-4">
-            <button
-              type="submit"
-              name="intent"
-              value="login"
-              disabled={isPending}
-              className="flex-1 rounded-lg bg-blue-600 px-4 py-2.5 text-center text-sm font-semibold text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:opacity-50"
-            >
-              {isPending ? 'Đang xử lý...' : 'Đăng nhập'}
-            </button>
-            <button
-              type="submit"
-              name="intent"
-              value="signup"
-              disabled={isPending}
-              className="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-center text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-4 focus:ring-gray-100 disabled:opacity-50"
-            >
-              Đăng ký
-            </button>
-          </div>
+          <button
+            type="submit"
+            disabled={isPending}
+            className="w-full py-2.5 bg-blue-900 hover:bg-blue-800 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center cursor-pointer mt-2"
+          >
+            {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Đăng nhập'}
+          </button>
         </form>
+
+        <p className="text-center text-sm text-gray-500 mt-6 pt-6 border-t border-gray-100">
+          Chưa có tài khoản?{' '}
+          <Link href="/sign-up" className="text-blue-900 font-semibold hover:underline">
+            Đăng ký
+          </Link>
+        </p>
+
       </div>
     </div>
   )

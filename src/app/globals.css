@@ -3,18 +3,11 @@
 @theme {
   --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
   --font-heading: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
-  --color-background: #f9fafb; /* gray-50 */
-  --color-foreground: #111827; /* gray-900 */
-}
-
-@media (prefers-color-scheme: dark) {
-  @theme inline {
-    --color-background: #111827;
-    --color-foreground: #f9fafb;
-  }
+  --color-background: #ffffff;
+  --color-foreground: #0f172a;
 }
 
 body {
-  background-color: var(--color-background);
-  color: var(--color-foreground);
+  background-color: #ffffff;
+  color: #0f172a;
 }

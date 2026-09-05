@@ -1,17 +1,12 @@
 import Link from 'next/link'
-import { Calculator } from 'lucide-react'
+import { Logo } from '@/components/ui/Logo'
 
 export function Footer() {
   return (
     <footer className="border-t border-gray-200 bg-white py-12">
-      <div className="container mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-4 lg:px-8">
+      <div className="container mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:px-8 lg:grid-cols-4">
         <div className="flex flex-col gap-4 lg:col-span-1">
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="flex h-8 w-8 items-center justify-center bg-blue-900 text-white transition-colors group-hover:bg-purple-600">
-              <Calculator className="h-5 w-5" />
-            </div>
-            <span className="text-lg font-heading font-bold text-gray-900 group-hover:text-blue-900 transition-colors">Toán Thầy Công</span>
-          </Link>
+          <Logo size="sm" showText={true} />
           <p className="text-sm text-gray-500 leading-relaxed pr-4">
             Hệ thống học toán trực tuyến hàng đầu, cung cấp bài giảng chất lượng cao bám sát chương trình phổ thông và luyện thi đại học.
           </p>

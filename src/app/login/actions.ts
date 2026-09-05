@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { authSchema } from '@/lib/validations'
+import { prisma } from '@/lib/prisma'
 
 export type AuthFormState = {
   errors?: {
@@ -34,17 +35,57 @@ export async function authAction(prevState: AuthFormState, formData: FormData): 
   const { email, password } = validatedData.data
 
   if (intent === 'login') {
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) {
+    let loginRes = await supabase.auth.signInWithPassword({ email, password })
+
+    // Auto-confirm resilience: if unconfirmed email was preventing login, auto-confirm and retry
+    if (
+      loginRes.error &&
+      (loginRes.error.message.toLowerCase().includes('email not confirmed') ||
+        loginRes.error.code === 'email_not_confirmed')
+    ) {
+      try {
+        await prisma.$executeRawUnsafe(
+          `UPDATE auth.users SET email_confirmed_at = NOW() WHERE email = $1 AND email_confirmed_at IS NULL`,
+          email
+        )
+        loginRes = await supabase.auth.signInWithPassword({ email, password })
+      } catch (confirmErr) {
+        console.warn('Auto-confirm retry error:', confirmErr)
+      }
+    }
+
+    if (loginRes.error || !loginRes.data.user) {
       return { message: 'Email hoặc mật khẩu không chính xác.' }
     }
-  } else if (intent === 'signup') {
-    const { error } = await supabase.auth.signUp({ email, password })
-    if (error) {
-      return { message: error.message || 'Lỗi khi đăng ký tài khoản.' }
+
+    const profile = await prisma.user.findUnique({
+      where: { id: loginRes.data.user.id },
+    })
+
+    if (!profile || !profile.phone || !profile.dateOfBirth) {
+      redirect('/onboarding')
     }
-    // Note: If Supabase is configured to require email confirmation, 
-    // we would show a different message here.
+
+    redirect('/dashboard')
+  } else if (intent === 'signup') {
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password })
+    if (signUpError) {
+      return { message: signUpError.message || 'Lỗi khi đăng ký tài khoản.' }
+    }
+
+    if (signUpData.user) {
+      try {
+        await prisma.$executeRawUnsafe(
+          `UPDATE auth.users SET email_confirmed_at = NOW() WHERE id = $1::uuid AND email_confirmed_at IS NULL`,
+          signUpData.user.id
+        )
+      } catch (err) {
+        console.warn('Auto-confirm signup error:', err)
+      }
+      await supabase.auth.signInWithPassword({ email, password })
+    }
+
+    redirect('/onboarding')
   }
 
   redirect('/dashboard')

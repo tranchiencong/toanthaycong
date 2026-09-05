@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
-import { onboardingSchema } from '@/lib/validations'
+import { onboardingSchema, parseDDMMYYYY } from '@/lib/validations'
 
 export type FormState = {
   errors?: {
@@ -42,13 +42,15 @@ export async function updateProfile(prevState: FormState, formData: FormData): P
 
   const { fullName, phone, dateOfBirth, address } = validatedData.data
 
+  const parsedDate = parseDDMMYYYY(dateOfBirth) || new Date()
+
   try {
     await prisma.user.upsert({
       where: { id: user.id },
       update: { 
         fullName, 
         phone, 
-        dateOfBirth: new Date(dateOfBirth), 
+        dateOfBirth: parsedDate, 
         address 
       },
       create: { 
@@ -56,7 +58,7 @@ export async function updateProfile(prevState: FormState, formData: FormData): P
         email: user.email ?? '', 
         fullName, 
         phone, 
-        dateOfBirth: new Date(dateOfBirth), 
+        dateOfBirth: parsedDate, 
         address 
       }
     })

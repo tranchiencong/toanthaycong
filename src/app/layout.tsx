@@ -25,8 +25,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="vi" className={`h-full antialiased scroll-smooth ${inter.variable}`}>
-      <body className="font-sans min-h-full flex flex-col bg-slate-50 text-slate-900 leading-relaxed">
+    <html lang="vi" suppressHydrationWarning className={`h-full antialiased scroll-smooth ${inter.variable}`}>
+      <body suppressHydrationWarning className="font-sans min-h-full flex flex-col bg-white text-slate-900 leading-relaxed">
         {children}
       </body>
     </html>

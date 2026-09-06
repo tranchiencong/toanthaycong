@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
-import { notFound } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { notFound, redirect } from 'next/navigation'
 import { CurriculumManager } from '../../CurriculumManager'
 
 export const metadata = {
@@ -14,26 +15,45 @@ export default async function CourseCurriculumPage({
 }) {
   const { id } = await params
 
-  const course = await prisma.course.findUnique({
-    where: { id },
-    include: {
-      chapters: {
-        orderBy: { orderNum: 'asc' },
-        include: {
-          lessons: {
-            orderBy: { orderNum: 'asc' },
-            include: {
-              resources: {
-                orderBy: { createdAt: 'asc' },
+  const supabase = await createClient()
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser()
+
+  if (!authUser) {
+    redirect('/login?redirect=/teacher')
+  }
+
+  const [course, profile] = await Promise.all([
+    prisma.course.findUnique({
+      where: { id },
+      include: {
+        chapters: {
+          orderBy: { orderNum: 'asc' },
+          include: {
+            lessons: {
+              orderBy: { orderNum: 'asc' },
+              include: {
+                resources: {
+                  orderBy: { createdAt: 'asc' },
+                },
               },
             },
           },
         },
       },
-    },
-  })
+    }),
+    prisma.user.findUnique({
+      where: { id: authUser.id },
+      select: { role: true },
+    }),
+  ])
 
   if (!course) {
+    notFound()
+  }
+
+  if (profile?.role !== 'ADMIN' && course.teacherId !== authUser.id) {
     notFound()
   }
 

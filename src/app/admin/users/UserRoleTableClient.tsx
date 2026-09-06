@@ -432,7 +432,7 @@ export function UserRoleTableClient({
                   type="text"
                   value={editForm.address}
                   onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
-                  placeholder="Ví dụ: Cầu Giấy, Hà Nội"
+                  placeholder="Ví dụ: Lục Nam, Bắc Ninh"
                   className="w-full text-xs px-3 py-2 border border-slate-300 focus:outline-none focus:border-blue-900 bg-white"
                 />
               </div>

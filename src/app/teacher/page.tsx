@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import {
   BookOpen,
@@ -11,6 +12,24 @@ import {
 } from 'lucide-react'
 
 export default async function TeacherDashboardPage() {
+  const supabase = await createClient()
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser()
+
+  const profile = authUser
+    ? await prisma.user.findUnique({
+        where: { id: authUser.id },
+        select: { role: true },
+      })
+    : null
+
+  const isTeacher = profile?.role === 'TEACHER'
+  const courseFilter = isTeacher && authUser ? { teacherId: authUser.id } : {}
+  const codeFilter = isTeacher && authUser ? { course: { teacherId: authUser.id } } : {}
+  const lessonFilter = isTeacher && authUser ? { chapter: { course: { teacherId: authUser.id } } } : {}
+  const enrollmentFilter = isTeacher && authUser ? { course: { teacherId: authUser.id } } : {}
+
   const [
     totalCourses,
     totalLessons,
@@ -20,12 +39,13 @@ export default async function TeacherDashboardPage() {
     courses,
     recentActivations,
   ] = await Promise.all([
-    prisma.course.count(),
-    prisma.lesson.count(),
-    prisma.enrollment.count(),
-    prisma.activationCode.count(),
-    prisma.activationCode.count({ where: { isUsed: true } }),
+    prisma.course.count({ where: courseFilter }),
+    prisma.lesson.count({ where: lessonFilter }),
+    prisma.enrollment.count({ where: enrollmentFilter }),
+    prisma.activationCode.count({ where: codeFilter }),
+    prisma.activationCode.count({ where: { ...codeFilter, isUsed: true } }),
     prisma.course.findMany({
+      where: courseFilter,
       include: {
         grade: true,
         subject: true,
@@ -42,7 +62,7 @@ export default async function TeacherDashboardPage() {
       take: 6,
     }),
     prisma.activationCode.findMany({
-      where: { isUsed: true },
+      where: { ...codeFilter, isUsed: true },
       include: {
         course: { select: { title: true, slug: true } },
         usedBy: { select: { fullName: true, email: true, phone: true } },

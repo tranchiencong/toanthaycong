@@ -6,7 +6,6 @@ import {
   LayoutDashboard,
   Users,
   Shield,
-  ExternalLink,
   GraduationCap,
   Layers,
   BookOpen,

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useTransition } from 'react'
+import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 import { toggleLessonCompleteAction } from './actions'
@@ -29,11 +29,6 @@ export function LessonActionBar({
 }: LessonActionBarProps) {
   const [isCompleted, setIsCompleted] = useState(initialCompleted)
   const [isPending, startTransition] = useTransition()
-
-  // Đồng bộ ngay lập tức khi người dùng chuyển sang bài học khác
-  useEffect(() => {
-    setIsCompleted(initialCompleted)
-  }, [initialCompleted, lessonId])
 
   const handleToggleComplete = () => {
     if (!isEnrolled) return

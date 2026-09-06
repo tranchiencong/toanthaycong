@@ -15,7 +15,7 @@ async function main() {
   // but we should create a Teacher if one doesn't exist.
   
   console.log('Seeding Grades...')
-  const grade10 = await prisma.grade.create({ data: { name: 'Lớp 10', orderNum: 10 } })
+  await prisma.grade.create({ data: { name: 'Lớp 10', orderNum: 10 } })
   const grade11 = await prisma.grade.create({ data: { name: 'Lớp 11', orderNum: 11 } })
   const grade12 = await prisma.grade.create({ data: { name: 'Lớp 12', orderNum: 12 } })
 

@@ -79,14 +79,21 @@ export async function activateCodeAction(
         throw new Error(`Bạn đã sở hữu khóa học "${activationRecord.course.title}" rồi.`)
       }
 
-      // 3. Mark code as used
-      await tx.activationCode.update({
-        where: { id: activationRecord.id },
+      // 3. Mark code as used atomically (chống race condition)
+      const claimResult = await tx.activationCode.updateMany({
+        where: {
+          id: activationRecord.id,
+          isUsed: false,
+        },
         data: {
           isUsed: true,
           usedById: user.id,
         },
       })
+
+      if (claimResult.count === 0) {
+        throw new Error('Mã kích hoạt này vừa được sử dụng bởi yêu cầu khác.')
+      }
 
       // 4. Create enrollment record
       await tx.enrollment.create({

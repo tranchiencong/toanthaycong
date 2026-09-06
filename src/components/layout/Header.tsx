@@ -87,57 +87,57 @@ export function Header({
           <Logo size="sm" showText={true} href="/" />
 
           {/* Education-standard Category Mega-Menu (Database-driven) */}
-          <div className="hidden md:block">
+          <div className="hidden md:flex items-center">
             <CategoryMenu categories={categories} />
           </div>
         </div>
 
         {/* Center: Search Bar (Coursera / Udemy standard) */}
-        <div className="hidden sm:flex flex-1 max-w-md lg:max-w-lg mx-2">
+        <div className="hidden sm:flex items-center flex-1 max-w-md lg:max-w-lg mx-2">
           <form
             action="/courses"
             method="GET"
             className="relative w-full flex items-center"
           >
-            <Search className="absolute left-3.5 h-4 w-4 text-gray-400 pointer-events-none" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
             <input
               type="text"
               name="q"
               placeholder="Tìm kiếm bài giảng, chuyên đề môn Toán..."
-              className="w-full pl-10 pr-4 py-2 text-sm bg-gray-50 border border-gray-200 focus:bg-white focus:border-blue-900 focus:outline-none transition-all placeholder:text-gray-400 text-gray-900"
+              className="w-full h-9 pl-10 pr-4 text-sm bg-gray-50 border border-gray-200 focus:bg-white focus:border-blue-900 focus:outline-none transition-all placeholder:text-gray-400 text-gray-900"
             />
           </form>
         </div>
 
         {/* Right Action: Auth or UserNav Dropdown */}
-        <div className="hidden sm:flex items-center gap-4 shrink-0">
+        <div className="hidden sm:flex items-center gap-3 shrink-0">
           {currentUser ? (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <Link
                 href="/dashboard"
-                className="text-sm font-semibold text-gray-700 hover:text-blue-900 transition-colors flex items-center gap-1.5 px-2 py-1.5"
+                className="text-sm font-semibold text-gray-700 hover:text-blue-900 transition-colors inline-flex items-center gap-1.5 px-3 h-9"
               >
-                <BookOpen className="h-4 w-4 text-gray-500" />
+                <BookOpen className="h-4 w-4 text-gray-500 shrink-0" />
                 <span>Khóa học của tôi</span>
               </Link>
               <UserNav user={currentUser} showMyLearningLink={false} />
             </div>
           ) : (
-            <>
+            <div className="flex items-center gap-3">
               <Link
                 href="/login"
-                className="text-sm font-medium text-gray-700 hover:text-blue-900 transition-colors px-3 py-2"
+                className="text-sm font-medium text-gray-700 hover:text-blue-900 transition-colors px-3 h-9 inline-flex items-center justify-center"
               >
                 Đăng nhập
               </Link>
               {/* Nút Đăng ký không bo tròn - nguyên bản vuông vắn */}
               <Link
                 href="/sign-up"
-                className="bg-purple-600 px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
+                className="bg-purple-600 px-5 h-9 inline-flex items-center justify-center text-sm font-medium text-white transition-colors hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
               >
                 Đăng ký
               </Link>
-            </>
+            </div>
           )}
         </div>
 

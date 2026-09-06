@@ -28,6 +28,9 @@ export async function toggleLessonCompleteAction(courseSlug: string, lessonId: s
   }
 
   const allLessonIds = course.chapters.flatMap(c => c.lessons.map(l => l.id))
+  if (!allLessonIds.includes(lessonId)) {
+    return { success: false, message: 'Bài học không thuộc khóa học này.' }
+  }
   const totalLessons = allLessonIds.length || 1
 
   const enrollment = await prisma.enrollment.findUnique({
@@ -40,6 +43,13 @@ export async function toggleLessonCompleteAction(courseSlug: string, lessonId: s
   })
 
   if (!enrollment) {
+    const profile = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { role: true }
+    })
+    if (profile?.role === 'TEACHER' || profile?.role === 'ADMIN') {
+      return { success: true, isCompleted: true, progress: 100 }
+    }
     return { success: false, message: 'Bạn chưa kích hoạt khóa học này.' }
   }
 
@@ -80,19 +90,69 @@ export async function postCommentAction(lessonId: string, content: string, cours
     return { success: false, message: 'Vui lòng đăng nhập để đặt câu hỏi thảo luận.' }
   }
 
-  if (!content || content.trim().length < 3) {
+  const trimmed = (content || '').trim()
+  if (trimmed.length < 3) {
     return { success: false, message: 'Nội dung câu hỏi quá ngắn, vui lòng nhập chi tiết hơn.' }
   }
 
+  if (trimmed.length > 1000) {
+    return { success: false, message: 'Nội dung câu hỏi tối đa 1.000 ký tự.' }
+  }
+
   try {
+    const [course, profile] = await Promise.all([
+      prisma.course.findUnique({
+        where: { slug: courseSlug },
+        include: {
+          chapters: {
+            include: {
+              lessons: { select: { id: true } },
+            },
+          },
+        },
+      }),
+      prisma.user.findUnique({
+        where: { id: user.id },
+        select: { role: true },
+      }),
+    ])
+
+    if (!course) {
+      return { success: false, message: 'Khóa học không tồn tại.' }
+    }
+
+    const allLessonIds = course.chapters.flatMap((c) => c.lessons.map((l) => l.id))
+    if (!allLessonIds.includes(lessonId)) {
+      return { success: false, message: 'Bài học không thuộc khóa học này.' }
+    }
+
+    const isPrivileged = profile?.role === 'TEACHER' || profile?.role === 'ADMIN'
+
+    if (!isPrivileged) {
+      const isEnrolled = await prisma.enrollment.findUnique({
+        where: {
+          studentId_courseId: {
+            studentId: user.id,
+            courseId: course.id
+          }
+        }
+      })
+
+      if (!isEnrolled) {
+        return { success: false, message: 'Bạn cần sở hữu khóa học để gửi câu hỏi thảo luận.' }
+      }
+    }
+
     await prisma.comment.create({
       data: {
-        content: content.trim(),
+        content: trimmed,
         lessonId,
         userId: user.id
       }
     })
 
+    // Revalidate the actual course learning room where comments are viewed
+    revalidatePath(`/learn/${courseSlug}`)
     revalidatePath(`/learn/${courseSlug}/${lessonSlug}`)
     return { success: true, message: 'Đã gửi câu hỏi thành công!' }
   } catch (error) {

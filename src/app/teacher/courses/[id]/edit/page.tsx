@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
-import { notFound } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import { notFound, redirect } from 'next/navigation'
 import { CourseForm } from '../../CourseForm'
 
 export const metadata = {
@@ -14,15 +15,32 @@ export default async function EditCoursePage({
 }) {
   const { id } = await params
 
-  const [course, grades, subjects] = await Promise.all([
+  const supabase = await createClient()
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser()
+
+  if (!authUser) {
+    redirect('/login?redirect=/teacher')
+  }
+
+  const [course, profile, grades, subjects] = await Promise.all([
     prisma.course.findUnique({
       where: { id },
+    }),
+    prisma.user.findUnique({
+      where: { id: authUser.id },
+      select: { role: true },
     }),
     prisma.grade.findMany({ orderBy: { orderNum: 'asc' } }),
     prisma.subject.findMany({ orderBy: { name: 'asc' } }),
   ])
 
   if (!course) {
+    notFound()
+  }
+
+  if (profile?.role !== 'ADMIN' && course.teacherId !== authUser.id) {
     notFound()
   }
 

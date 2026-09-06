@@ -137,10 +137,39 @@ export async function deleteUserAction(userId: string) {
     return { success: false, message: 'Bạn không thể tự xóa tài khoản Quản trị viên của chính mình!' }
   }
 
+  const userToDelete = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      fullName: true,
+      _count: { select: { courses: true } },
+    },
+  })
+
+  if (!userToDelete) {
+    return { success: false, message: 'Người dùng không tồn tại.' }
+  }
+
+  if (userToDelete._count.courses > 0) {
+    return {
+      success: false,
+      message: `Không thể xóa vì tài khoản "${userToDelete.fullName}" đang sở hữu ${userToDelete._count.courses} khóa học. Vui lòng chuyển giao hoặc xóa các khóa học trước.`,
+    }
+  }
+
   try {
     await prisma.user.delete({
       where: { id: userId }
     })
+
+    // Also clean up Supabase Auth user record so accounts don't remain orphaned
+    try {
+      await prisma.$executeRawUnsafe(
+        `DELETE FROM auth.users WHERE id = $1::uuid`,
+        userId
+      )
+    } catch (authDeleteErr) {
+      console.warn('Could not delete from auth.users:', authDeleteErr)
+    }
 
     revalidatePath('/admin/users')
     revalidatePath('/admin/students')

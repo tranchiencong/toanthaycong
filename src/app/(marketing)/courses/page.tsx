@@ -106,6 +106,7 @@ export default async function CoursesPage({
                         src="/images/thumbnail-v2.jpg"
                         alt={course.title}
                         fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         className={`object-cover mix-blend-multiply opacity-90 group-hover:scale-105 transition-transform duration-700 ${hueClass}`}
                       />
                       <div className="absolute top-4 left-4 bg-blue-50 text-blue-900 border border-blue-200 px-2.5 py-1 text-xs font-bold tracking-wider shadow-xs uppercase">

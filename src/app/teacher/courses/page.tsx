@@ -10,13 +10,30 @@ import {
   Users,
 } from 'lucide-react'
 
+import { createClient } from '@/lib/supabase/server'
+
 export const metadata = {
   title: 'Quản Lý Khóa Học | Cổng Giáo Viên',
   description: 'Danh sách và quản lý các khóa học Toán Thầy Công.',
 }
 
 export default async function TeacherCoursesPage() {
+  const supabase = await createClient()
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser()
+
+  const profile = authUser
+    ? await prisma.user.findUnique({
+        where: { id: authUser.id },
+        select: { role: true },
+      })
+    : null
+
+  const isTeacher = profile?.role === 'TEACHER'
+
   const courses = await prisma.course.findMany({
+    where: isTeacher && authUser ? { teacherId: authUser.id } : {},
     include: {
       grade: true,
       subject: true,

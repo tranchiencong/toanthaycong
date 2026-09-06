@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { createClient } from '@/lib/supabase/server'
 import { BatchGenerateForm } from './BatchGenerateForm'
 import { CodeTableClient } from './CodeTableClient'
 
@@ -8,8 +9,23 @@ export const metadata = {
 }
 
 export default async function ActivationCodesPage() {
+  const supabase = await createClient()
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser()
+
+  const profile = authUser
+    ? await prisma.user.findUnique({
+        where: { id: authUser.id },
+        select: { role: true },
+      })
+    : null
+
+  const isTeacher = profile?.role === 'TEACHER'
+
   const [courses, codes] = await Promise.all([
     prisma.course.findMany({
+      where: isTeacher && authUser ? { teacherId: authUser.id } : {},
       select: {
         id: true,
         title: true,
@@ -18,6 +34,7 @@ export default async function ActivationCodesPage() {
       orderBy: { title: 'asc' },
     }),
     prisma.activationCode.findMany({
+      where: isTeacher && authUser ? { course: { teacherId: authUser.id } } : {},
       include: {
         course: {
           select: {

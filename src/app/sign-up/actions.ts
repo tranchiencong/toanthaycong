@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { prisma } from '@/lib/prisma'
 import { signUpSchema, parseDDMMYYYY } from '@/lib/validations'
+import { checkRegistrationRateLimit, verifyTurnstileToken } from '@/lib/anti-spam'
 
 export type SignUpFormState = {
   errors?: {
@@ -40,6 +41,24 @@ export async function signUpAction(
   }
 
   const { fullName, phone, email, password, dateOfBirth, address } = validated.data
+
+  // Anti-abuse rate limiting check per email
+  const rateCheck = checkRegistrationRateLimit(email)
+  if (!rateCheck.allowed) {
+    return {
+      message: `Bạn đang gửi quá nhiều yêu cầu đăng ký. Vui lòng thử lại sau ${rateCheck.remainingTimeSeconds || 60} giây.`,
+    }
+  }
+
+  // Anti-abuse: Cloudflare Turnstile bot verification
+  const turnstileToken = formData.get('cf-turnstile-response') as string | null
+  const isTurnstileValid = await verifyTurnstileToken(turnstileToken)
+  if (!isTurnstileValid) {
+    return {
+      message: 'Xác minh an toàn chống bot không thành công. Vui lòng tải lại trang và thử lại.',
+    }
+  }
+
   const supabase = await createClient()
 
   // 1. Check if email already registered in Database
@@ -65,14 +84,20 @@ export async function signUpAction(
     },
   })
 
-  if (authError || !authData.user) {
+  if (
+    authError ||
+    !authData.user ||
+    (authData.user.identities && authData.user.identities.length === 0)
+  ) {
     return {
-      message: authError?.message || 'Không thể tạo tài khoản xác thực. Vui lòng thử lại.',
+      message:
+        authError?.message ||
+        'Email này đã được đăng ký tài khoản. Bạn vui lòng đăng nhập hoặc sử dụng email khác.',
     }
   }
 
-  // 3. Save full student profile into PostgreSQL Database via Prisma
-  const parsedDate = parseDDMMYYYY(dateOfBirth) || new Date()
+  // 3. Save student profile into PostgreSQL Database via Prisma
+  const parsedDate = dateOfBirth ? parseDDMMYYYY(dateOfBirth) : null
 
   try {
     // Ensure email is confirmed in auth.users
@@ -87,7 +112,7 @@ export async function signUpAction(
         fullName,
         phone,
         dateOfBirth: parsedDate,
-        address,
+        address: address || null,
       },
       create: {
         id: authData.user.id,
@@ -95,7 +120,7 @@ export async function signUpAction(
         fullName,
         phone,
         dateOfBirth: parsedDate,
-        address,
+        address: address || null,
         role: 'STUDENT',
       },
     })

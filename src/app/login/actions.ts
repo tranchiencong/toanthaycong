@@ -13,10 +13,25 @@ export type AuthFormState = {
   message?: string
 }
 
+function getSafeRedirectUrl(target: unknown): string {
+  if (typeof target !== 'string') return '/dashboard'
+  const trimmed = target.trim()
+  if (
+    !trimmed.startsWith('/') ||
+    trimmed.startsWith('//') ||
+    trimmed.startsWith('/\\') ||
+    trimmed.includes('://')
+  ) {
+    return '/dashboard'
+  }
+  return trimmed
+}
+
 export async function authAction(prevState: AuthFormState, formData: FormData): Promise<AuthFormState> {
   const supabase = await createClient()
 
   const intent = formData.get('intent')
+  const safeRedirect = getSafeRedirectUrl(formData.get('redirect'))
   
   const rawData = {
     email: formData.get('email'),
@@ -62,11 +77,27 @@ export async function authAction(prevState: AuthFormState, formData: FormData): 
       where: { id: loginRes.data.user.id },
     })
 
-    if (!profile || !profile.phone || !profile.dateOfBirth) {
-      redirect('/onboarding')
+    if (!profile) {
+      try {
+        await prisma.user.upsert({
+          where: { id: loginRes.data.user.id },
+          update: {},
+          create: {
+            id: loginRes.data.user.id,
+            email: loginRes.data.user.email ?? email,
+            fullName:
+              (loginRes.data.user.user_metadata?.full_name as string) ||
+              email.split('@')[0] ||
+              'Học viên',
+            role: 'STUDENT',
+          },
+        })
+      } catch (err) {
+        console.warn('Profile initialization error on login:', err)
+      }
     }
 
-    redirect('/dashboard')
+    redirect(safeRedirect)
   } else if (intent === 'signup') {
     const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password })
     if (signUpError) {
@@ -74,6 +105,9 @@ export async function authAction(prevState: AuthFormState, formData: FormData): 
     }
 
     if (signUpData.user) {
+      if (signUpData.user.identities && signUpData.user.identities.length === 0) {
+        return { message: 'Email này đã tồn tại trong hệ thống. Vui lòng đăng nhập.' }
+      }
       try {
         await prisma.$executeRawUnsafe(
           `UPDATE auth.users SET email_confirmed_at = NOW() WHERE id = $1::uuid AND email_confirmed_at IS NULL`,
@@ -85,7 +119,7 @@ export async function authAction(prevState: AuthFormState, formData: FormData): 
       await supabase.auth.signInWithPassword({ email, password })
     }
 
-    redirect('/onboarding')
+    redirect('/dashboard')
   }
 
   redirect('/dashboard')

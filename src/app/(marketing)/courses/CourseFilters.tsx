@@ -44,8 +44,8 @@ export function CourseFilters({ grades }: { grades: FilterOption[] }) {
             placeholder="Tên khóa học..." 
             className="w-full pl-3.5 pr-9 py-2.5 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-900 focus:border-blue-900 text-sm text-slate-800 placeholder:text-slate-400 bg-white"
             defaultValue={searchParams.get('q') || ''}
-            onChange={(e) => {
-              // Debounce in a real app
+            onChange={() => {
+              // Debounce search in future iteration
             }}
             onKeyDown={(e) => {
               if (e.key === 'Enter') {
@@ -66,7 +66,11 @@ export function CourseFilters({ grades }: { grades: FilterOption[] }) {
           {grades.map((grade) => {
             const isSelected = currentGradeId === grade.id
             return (
-              <label key={grade.id} className="flex items-center gap-3 cursor-pointer group">
+              <label
+                key={grade.id}
+                onClick={() => handleGradeChange(grade.id)}
+                className="flex items-center gap-3 cursor-pointer group"
+              >
                 <div className={`w-4 h-4 border flex items-center justify-center transition-colors ${isSelected ? 'bg-blue-900 border-blue-900 text-white' : 'border-slate-300 bg-white group-hover:border-purple-600'}`}>
                   {isSelected && (
                     <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

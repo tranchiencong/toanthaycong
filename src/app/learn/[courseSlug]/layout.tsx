@@ -50,21 +50,30 @@ export default async function LearnLayout({
   let completedLessons: string[] = []
 
   if (authUser) {
-    const enrollment = await prisma.enrollment.findUnique({
-      where: {
-        studentId_courseId: {
-          studentId: authUser.id,
-          courseId: course.id,
+    const [enrollment, userProfile] = await Promise.all([
+      prisma.enrollment.findUnique({
+        where: {
+          studentId_courseId: {
+            studentId: authUser.id,
+            courseId: course.id,
+          },
         },
-      },
-      select: {
-        completedLessons: true,
-      },
-    })
+        select: {
+          completedLessons: true,
+        },
+      }),
+      prisma.user.findUnique({
+        where: { id: authUser.id },
+        select: { role: true },
+      }),
+    ])
 
-    if (enrollment) {
+    const isTeacherOrAdmin =
+      userProfile?.role === 'TEACHER' || userProfile?.role === 'ADMIN'
+
+    if (enrollment || isTeacherOrAdmin) {
       isEnrolled = true
-      completedLessons = enrollment.completedLessons
+      completedLessons = enrollment?.completedLessons || []
     }
   }
 

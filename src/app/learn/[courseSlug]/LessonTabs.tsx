@@ -210,6 +210,15 @@ export function LessonTabs({
                     <GraduationCap className="h-3.5 w-3.5 text-purple-600" />
                     <span>Giảng viên: Thầy Công</span>
                   </span>
+                  {isCompleted && (
+                    <>
+                      <span>•</span>
+                      <span className="flex items-center gap-1 text-emerald-700 font-semibold">
+                        <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />
+                        <span>Đã hoàn thành</span>
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

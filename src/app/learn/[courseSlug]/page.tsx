@@ -136,8 +136,11 @@ export default async function CourseLearnPage({
     }
   }
 
-  // 5. Block access if lesson is private and user is not enrolled
-  if (!isEnrolled && !activeLesson.isPreview) {
+  const isTeacherOrAdmin = currentProfile?.role === 'TEACHER' || currentProfile?.role === 'ADMIN'
+  const hasAccess = isEnrolled || activeLesson.isPreview || isTeacherOrAdmin
+
+  // 5. Block access if lesson is private and user is not authorized
+  if (!hasAccess) {
     return (
       <div className="relative flex-1 flex items-center justify-center bg-white p-8">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
@@ -194,6 +197,11 @@ export default async function CourseLearnPage({
                 Học thử miễn phí
               </span>
             )}
+            {isTeacherOrAdmin && !isEnrolled && (
+              <span className="bg-amber-50 border border-amber-200 text-amber-800 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+                Xem trước (Giáo viên)
+              </span>
+            )}
             <span className="text-slate-400">
               Bài {activeLesson.orderNum} / {allLessons.length}
             </span>
@@ -225,7 +233,7 @@ export default async function CourseLearnPage({
               courseSlug={courseSlug}
               lessonId={activeLesson.id}
               initialCompleted={isCompleted}
-              isEnrolled={isEnrolled}
+              isEnrolled={isEnrolled || isTeacherOrAdmin}
               prevLesson={prevLesson}
               nextLesson={nextLesson}
             />

@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 
 const activationSchema = z.object({
-  code: z.string().min(3, 'Mã kích hoạt quá ngắn').max(20, 'Mã kích hoạt không hợp lệ'),
+  code: z.string().min(3, 'Mã kích hoạt quá ngắn').max(35, 'Mã kích hoạt không hợp lệ').trim(),
   courseId: z.string().uuid()
 })
 
@@ -24,11 +24,11 @@ export async function activateCourseAction(prevState: ActionState, formData: For
       return { success: false, message: 'Bạn cần đăng nhập để kích hoạt khóa học.' }
     }
 
-    const code = formData.get('code') as string
+    const rawCode = ((formData.get('code') as string) || '').trim().toUpperCase()
     const courseId = formData.get('courseId') as string
 
     // Validate
-    const validatedFields = activationSchema.safeParse({ code, courseId })
+    const validatedFields = activationSchema.safeParse({ code: rawCode, courseId })
     if (!validatedFields.success) {
       return { success: false, message: validatedFields.error.issues[0]?.message || 'Dữ liệu không hợp lệ' }
     }
@@ -41,7 +41,7 @@ export async function activateCourseAction(prevState: ActionState, formData: For
       })
 
       if (!activationRecord) {
-        throw new Error('Mã kích hoạt không tồn tại.')
+        throw new Error('Mã kích hoạt không tồn tại hoặc bạn đã nhập sai ký tự.')
       }
 
       if (activationRecord.isUsed) {
@@ -66,14 +66,21 @@ export async function activateCourseAction(prevState: ActionState, formData: For
         throw new Error('Bạn đã sở hữu khóa học này rồi.')
       }
 
-      // 3. Đánh dấu mã đã sử dụng
-      await tx.activationCode.update({
-        where: { id: activationRecord.id },
+      // 3. Đánh dấu mã đã sử dụng nguyên tử (Chống Race Condition)
+      const claimResult = await tx.activationCode.updateMany({
+        where: {
+          id: activationRecord.id,
+          isUsed: false,
+        },
         data: {
           isUsed: true,
-          usedById: authData.user.id
-        }
+          usedById: authData.user.id,
+        },
       })
+
+      if (claimResult.count === 0) {
+        throw new Error('Mã kích hoạt này vừa được sử dụng bởi yêu cầu khác.')
+      }
 
       // 4. Tạo Enrollment
       await tx.enrollment.create({

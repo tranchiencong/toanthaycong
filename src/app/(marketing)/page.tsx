@@ -48,21 +48,53 @@ export default async function Home() {
                 </Link>
               </div>
             </div>
-            <div className="relative lg:h-[600px] flex justify-center lg:justify-end">
-              <div className="relative w-full max-w-lg aspect-square lg:aspect-auto lg:w-[500px] lg:h-[500px] bg-slate-100 overflow-hidden shadow-sm">
+            <div className="relative lg:h-[580px] flex items-center justify-center lg:justify-end">
+              {/* Ethereal Ambient Glow matching the purple/blue theme */}
+              <div className="absolute -inset-4 sm:-inset-8 bg-gradient-to-tr from-purple-600/25 via-indigo-500/15 to-blue-600/20 rounded-[3rem] blur-3xl -z-10 pointer-events-none" />
+
+              {/* Decorative Math Elements in background */}
+              <div className="absolute -top-4 -right-4 w-12 h-12 rounded-2xl bg-white/90 backdrop-blur-md shadow-md border border-purple-100 flex items-center justify-center text-purple-600 font-serif font-bold text-lg pointer-events-none hidden sm:flex">
+                ∑
+              </div>
+              <div className="absolute -bottom-8 right-16 w-10 h-10 rounded-xl bg-white/90 backdrop-blur-md shadow-md border border-blue-100 flex items-center justify-center text-blue-700 font-serif font-bold text-sm pointer-events-none hidden sm:flex">
+                π
+              </div>
+
+              {/* Main Card Container with Premium Rounded Border and Shadow */}
+              <div className="relative w-full max-w-md sm:max-w-lg aspect-square rounded-3xl sm:rounded-[2.5rem] overflow-hidden shadow-2xl shadow-purple-900/15 ring-1 ring-slate-900/5 bg-gradient-to-tr from-purple-900 to-indigo-900">
                 <Image
-                  src="/images/hero-v2.jpg"
-                  alt=""
-                  aria-hidden="true"
+                  src="/images/hero-v3.jpg"
+                  alt="Thầy Công - Toán Thầy Công"
                   fill
-                  className="object-cover mix-blend-multiply"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 520px"
+                  className="object-cover object-center transition-transform duration-500 hover:scale-[1.02]"
                   priority
                 />
               </div>
-              <div className="absolute -bottom-6 -left-6 bg-white p-6 shadow-xl border border-gray-100 flex flex-col gap-1">
-                <ShieldCheck className="h-6 w-6 text-purple-600 mb-2" />
-                <p className="text-sm font-heading font-bold text-blue-900 uppercase tracking-widest">Đảm bảo</p>
-                <p className="text-sm text-gray-500 font-light">Hiệu quả 100%</p>
+
+              {/* Floating Trust Badge 1: Top Right */}
+              <div className="absolute -top-3 sm:-top-5 -right-2 sm:-right-4 bg-white/95 backdrop-blur-md py-2.5 px-4 rounded-2xl shadow-xl border border-slate-100 flex items-center gap-2.5 z-10">
+                <div className="flex -space-x-1.5">
+                  <div className="w-6 h-6 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">9+</div>
+                  <div className="w-6 h-6 rounded-full bg-purple-600 text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white">★</div>
+                </div>
+                <div className="text-left">
+                  <p className="text-xs font-bold text-slate-900 leading-none">Chinh phục 9+</p>
+                  <p className="text-[10px] text-slate-500 font-medium mt-0.5">Hơn 10.000+ Học sinh</p>
+                </div>
+              </div>
+
+              {/* Floating Credential Card 2: Bottom Left */}
+              <div className="absolute -bottom-5 sm:-bottom-7 -left-2 sm:-left-6 bg-white/95 backdrop-blur-md p-4 sm:p-5 rounded-2xl shadow-2xl border border-slate-100 flex items-center gap-3.5 z-10 max-w-[280px] sm:max-w-xs">
+                <div className="w-11 h-11 rounded-xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 shrink-0">
+                  <ShieldCheck className="h-6 w-6 text-purple-600" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-slate-900 uppercase tracking-wider">Học Toán Bản Chất</p>
+                  <p className="text-[11px] text-slate-600 font-normal mt-0.5 leading-snug">
+                    Tư duy logic vững chắc, không học vẹt, tối ưu điểm thi
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -140,6 +172,7 @@ export default async function Home() {
                     src="/images/thumbnail-v2.jpg"
                     alt={course.title}
                     fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className={`object-cover mix-blend-multiply opacity-90 group-hover:scale-105 transition-transform duration-700 ${hueClass}`}
                   />
                   <div className="absolute top-4 left-4 bg-white px-2 py-1 text-xs font-bold text-blue-900 tracking-widest border border-gray-200 shadow-sm">
@@ -242,7 +275,7 @@ export default async function Home() {
         <div className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6 tracking-tight">Xây dựng nền tảng. Chinh phục đỉnh cao.</h2>
           <p className="text-blue-100/80 text-lg md:text-xl mb-12 max-w-2xl mx-auto font-normal">
-            Tham gia cộng đồng học thuật chuyên nghiệp nhất ngay hôm nay. Trải nghiệm phương pháp tư duy Swiss Style.
+            Tham gia cộng đồng học thuật chuyên nghiệp nhất ngay hôm nay. Trải nghiệm phương pháp tư duy mới.
           </p>
           <div className="flex justify-center">
             <Link href="/login" className="inline-flex items-center justify-center gap-2 bg-white px-10 py-5 text-sm font-bold uppercase tracking-widest text-blue-900 transition-all hover:bg-purple-50 hover:text-purple-700 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-white">
@@ -252,11 +285,11 @@ export default async function Home() {
           <div className="mt-12 flex flex-wrap justify-center gap-x-12 gap-y-4 text-sm text-blue-100/90 font-medium">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-purple-300" />
-              <span>Học thử miễn phí</span>
+              <span>Bài giảng bám sát đề thi</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-purple-300" />
-              <span>Thanh toán 1 lần</span>
+              <span>Kích hoạt 1 lần duy nhất</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-purple-300" />

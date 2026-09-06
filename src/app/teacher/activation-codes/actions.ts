@@ -57,35 +57,39 @@ export async function generateActivationCodesAction(
     return { success: false, message: 'Số lượng mã hợp lệ từ 1 đến 200 mã.' }
   }
 
-  // Verify course exists
+  // Verify course exists and ownership
   const course = await prisma.course.findUnique({
     where: { id: courseId },
+    select: { id: true, title: true, teacherId: true },
   })
 
   if (!course) {
     return { success: false, message: 'Không tìm thấy khóa học.' }
   }
 
+  if (user.role !== 'ADMIN' && course.teacherId !== user.id) {
+    return {
+      success: false,
+      message: 'Bạn chỉ có quyền sinh mã kích hoạt cho khóa học do chính bạn giảng dạy.',
+    }
+  }
+
   try {
-    // Generate unique codes
-    const existingCodes = new Set(
-      (await prisma.activationCode.findMany({ select: { code: true } })).map(
-        (c) => c.code
-      )
-    )
+    const cleanPrefix = customPrefix
+      ? customPrefix.replace(/[^A-Z0-9]/g, '').slice(0, 10)
+      : 'TTC'
+    const prefix = `${cleanPrefix}-`
 
-    const newCodes: string[] = []
-    const prefix = customPrefix ? `${customPrefix.replace(/[-_]+$/, '')}-` : 'TTC-'
+    const newCodesSet = new Set<string>()
 
-    while (newCodes.length < quantity) {
+    while (newCodesSet.size < quantity) {
       const part1 = generateCodeChunk(4)
       const part2 = generateCodeChunk(4)
       const code = `${prefix}${part1}-${part2}`
-
-      if (!existingCodes.has(code) && !newCodes.includes(code)) {
-        newCodes.push(code)
-      }
+      newCodesSet.add(code)
     }
+
+    const newCodes = Array.from(newCodesSet)
 
     // Insert batch into Database
     await prisma.activationCode.createMany({
@@ -94,6 +98,7 @@ export async function generateActivationCodesAction(
         courseId,
         isUsed: false,
       })),
+      skipDuplicates: true,
     })
 
     revalidatePath('/teacher/activation-codes')
@@ -134,10 +139,18 @@ export async function deleteActivationCodeAction(codeId: string) {
   try {
     const code = await prisma.activationCode.findUnique({
       where: { id: codeId },
+      include: { course: { select: { teacherId: true } } },
     })
 
     if (!code) {
       return { success: false, message: 'Mã không tồn tại.' }
+    }
+
+    if (user.role !== 'ADMIN' && code.course.teacherId !== user.id) {
+      return {
+        success: false,
+        message: 'Bạn không có quyền xóa mã kích hoạt của khóa học này.',
+      }
     }
 
     if (code.isUsed) {

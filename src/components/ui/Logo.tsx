@@ -1,5 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg'
@@ -33,40 +34,23 @@ export function Logo({
   }
 
   const content = (
-    <div className={`inline-flex items-center gap-3 group transition-transform ${className}`}>
-      {/* Biểu tượng logo Monogram "tc" */}
+    <div className={`inline-flex items-center gap-2.5 group transition-transform ${className}`}>
+      {/* Biểu tượng logo Toán Thầy Công */}
       <div
-        className={`${iconSizes[size]} shrink-0 flex items-center justify-center rounded-lg bg-blue-900 text-white shadow-sm transition-all group-hover:bg-blue-800 group-hover:scale-105`}
+        className={`${iconSizes[size]} shrink-0 flex items-center justify-center transition-transform group-hover:scale-105`}
       >
-        <svg
-          viewBox="0 0 40 40"
+        <Image
+          src="/icon.svg"
+          alt="Toán Thầy Công Logo"
           width={markSizes[size]}
           height={markSizes[size]}
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-full h-full p-1"
-        >
-          {/* Chữ tc thiết kế dạng Monogram hình học hiện đại */}
-          <text
-            x="20"
-            y="27"
-            textAnchor="middle"
-            fill="white"
-            style={{
-              fontFamily:
-                "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-              fontWeight: 900,
-              fontSize: '22px',
-              letterSpacing: '1.5px',
-            }}
-          >
-            tc
-          </text>
-        </svg>
+          className="w-full h-full object-contain"
+          priority
+        />
       </div>
 
       {showText && (
-        <div className="flex flex-col text-left">
+        <div className="flex flex-col justify-center text-left">
           <span
             className={`${textSizes[size]} tracking-tight text-slate-900 group-hover:text-blue-600 transition-colors leading-tight font-heading`}
           >
@@ -83,7 +67,11 @@ export function Logo({
   )
 
   if (href) {
-    return <Link href={href}>{content}</Link>
+    return (
+      <Link href={href} className="inline-flex items-center focus:outline-none">
+        {content}
+      </Link>
+    )
   }
 
   return content

@@ -206,6 +206,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                   src="/images/thumbnail-v2.jpg"
                   alt={course.title}
                   fill
+                  sizes="(max-width: 1280px) 33vw, 384px"
                   className="object-cover mix-blend-multiply opacity-90"
                 />
               </div>

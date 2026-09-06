@@ -52,6 +52,29 @@ async function verifyTeacherOrAdmin() {
   return user
 }
 
+async function verifyCourseOwnership(courseId: string, user: { id: string; role: string }) {
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      teacherId: true,
+      _count: { select: { enrollments: true } },
+    },
+  })
+
+  if (!course) {
+    throw new Error('Khóa học không tồn tại.')
+  }
+
+  if (user.role !== 'ADMIN' && course.teacherId !== user.id) {
+    throw new Error('Bạn không có quyền chỉnh sửa hoặc thao tác trên khóa học này.')
+  }
+
+  return course
+}
+
 // 1. Create Course
 export async function createCourseAction(
   _prevState: ActionState,
@@ -115,7 +138,8 @@ export async function updateCourseAction(
   formData: FormData
 ): Promise<ActionState> {
   try {
-    await verifyTeacherOrAdmin()
+    const user = await verifyTeacherOrAdmin()
+    await verifyCourseOwnership(courseId, user)
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Lỗi xác thực'
     return { success: false, message: msg }
@@ -132,7 +156,7 @@ export async function updateCourseAction(
   }
 
   try {
-    await prisma.course.update({
+    const updated = await prisma.course.update({
       where: { id: courseId },
       data: {
         title,
@@ -146,6 +170,7 @@ export async function updateCourseAction(
     revalidatePath('/teacher/courses')
     revalidatePath('/teacher')
     revalidatePath('/courses')
+    revalidatePath(`/courses/${updated.slug}`)
     return { success: true, message: 'Đã cập nhật thông tin khóa học thành công.' }
   } catch (error) {
     console.error('Error updating course:', error)
@@ -156,15 +181,25 @@ export async function updateCourseAction(
 // 3. Delete Course
 export async function deleteCourseAction(courseId: string) {
   try {
-    await verifyTeacherOrAdmin()
+    const user = await verifyTeacherOrAdmin()
+    const course = await verifyCourseOwnership(courseId, user)
+
+    if (course._count.enrollments > 0) {
+      return {
+        success: false,
+        message: `Không thể xóa vì khóa học đang có ${course._count.enrollments} học viên đã ghi danh. Vui lòng gỡ xuất bản (ẩn) khóa học thay vì xóa.`,
+      }
+    }
+
     await prisma.course.delete({ where: { id: courseId } })
     revalidatePath('/teacher/courses')
     revalidatePath('/teacher')
     revalidatePath('/courses')
     return { success: true }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error deleting course:', error)
-    return { success: false, message: 'Không thể xóa khóa học này.' }
+    const msg = error instanceof Error ? error.message : 'Không thể xóa khóa học này.'
+    return { success: false, message: msg }
   }
 }
 
@@ -175,7 +210,8 @@ export async function createChapterAction(
   formData: FormData
 ): Promise<ActionState> {
   try {
-    await verifyTeacherOrAdmin()
+    const user = await verifyTeacherOrAdmin()
+    await verifyCourseOwnership(courseId, user)
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Lỗi xác thực'
     return { success: false, message: msg }
@@ -212,13 +248,15 @@ export async function createChapterAction(
 // 5. Delete Chapter
 export async function deleteChapterAction(chapterId: string, courseId: string) {
   try {
-    await verifyTeacherOrAdmin()
+    const user = await verifyTeacherOrAdmin()
+    await verifyCourseOwnership(courseId, user)
     await prisma.chapter.delete({ where: { id: chapterId } })
     revalidatePath(`/teacher/courses/${courseId}/curriculum`)
     return { success: true }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error deleting chapter:', error)
-    return { success: false, message: 'Không thể xóa chương.' }
+    const msg = error instanceof Error ? error.message : 'Không thể xóa chương.'
+    return { success: false, message: msg }
   }
 }
 
@@ -229,8 +267,10 @@ export async function createLessonAction(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
+  let course: { id: string; slug: string }
   try {
-    await verifyTeacherOrAdmin()
+    const user = await verifyTeacherOrAdmin()
+    course = await verifyCourseOwnership(courseId, user)
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Lỗi xác thực'
     return { success: false, message: msg }
@@ -239,7 +279,8 @@ export async function createLessonAction(
   const title = (formData.get('title') as string || '').trim()
   const rawYoutube = (formData.get('youtubeUrl') as string || '').trim()
   const isPreview = formData.get('isPreview') === 'on'
-  const durationMinutes = parseInt(formData.get('durationMinutes') as string || '0', 10)
+  const rawMinutes = parseInt(formData.get('durationMinutes') as string || '0', 10)
+  const durationMinutes = isNaN(rawMinutes) || rawMinutes < 0 ? 0 : Math.min(rawMinutes, 1440)
 
   if (!title || !rawYoutube) {
     return { success: false, message: 'Vui lòng nhập tiêu đề và link video YouTube.' }
@@ -271,7 +312,7 @@ export async function createLessonAction(
     })
 
     revalidatePath(`/teacher/courses/${courseId}/curriculum`)
-    revalidatePath(`/learn/${courseId}`)
+    revalidatePath(`/learn/${course.slug}`)
     return { success: true, message: 'Đã thêm bài giảng thành công.' }
   } catch (error) {
     console.error('Error creating lesson:', error)
@@ -282,14 +323,16 @@ export async function createLessonAction(
 // 7. Delete Lesson
 export async function deleteLessonAction(lessonId: string, courseId: string) {
   try {
-    await verifyTeacherOrAdmin()
+    const user = await verifyTeacherOrAdmin()
+    const course = await verifyCourseOwnership(courseId, user)
     await prisma.lesson.delete({ where: { id: lessonId } })
     revalidatePath(`/teacher/courses/${courseId}/curriculum`)
-    revalidatePath(`/learn/${courseId}`)
+    revalidatePath(`/learn/${course.slug}`)
     return { success: true }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error deleting lesson:', error)
-    return { success: false, message: 'Không thể xóa bài giảng.' }
+    const msg = error instanceof Error ? error.message : 'Không thể xóa bài giảng.'
+    return { success: false, message: msg }
   }
 }
 
@@ -300,8 +343,10 @@ export async function createResourceAction(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
+  let course: { id: string; slug: string }
   try {
-    await verifyTeacherOrAdmin()
+    const user = await verifyTeacherOrAdmin()
+    course = await verifyCourseOwnership(courseId, user)
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : 'Lỗi xác thực'
     return { success: false, message: msg }
@@ -314,6 +359,16 @@ export async function createResourceAction(
     return { success: false, message: 'Vui lòng nhập tên tài liệu và đường dẫn.' }
   }
 
+  // Security: Prevent Stored XSS by enforcing http:// or https:// URLs
+  try {
+    const parsed = new URL(externalUrl)
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      return { success: false, message: 'Đường dẫn tài liệu phải bắt đầu bằng http:// hoặc https://' }
+    }
+  } catch {
+    return { success: false, message: 'Định dạng đường dẫn liên kết không hợp lệ.' }
+  }
+
   try {
     await prisma.lessonResource.create({
       data: {
@@ -324,6 +379,7 @@ export async function createResourceAction(
     })
 
     revalidatePath(`/teacher/courses/${courseId}/curriculum`)
+    revalidatePath(`/learn/${course.slug}`)
     return { success: true, message: 'Đã thêm tài liệu đính kèm.' }
   } catch (error) {
     console.error('Error creating resource:', error)
@@ -334,12 +390,15 @@ export async function createResourceAction(
 // 9. Delete Lesson Resource
 export async function deleteResourceAction(resourceId: string, courseId: string) {
   try {
-    await verifyTeacherOrAdmin()
+    const user = await verifyTeacherOrAdmin()
+    const course = await verifyCourseOwnership(courseId, user)
     await prisma.lessonResource.delete({ where: { id: resourceId } })
     revalidatePath(`/teacher/courses/${courseId}/curriculum`)
+    revalidatePath(`/learn/${course.slug}`)
     return { success: true }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error deleting resource:', error)
-    return { success: false, message: 'Không thể xóa tài liệu.' }
+    const msg = error instanceof Error ? error.message : 'Không thể xóa tài liệu.'
+    return { success: false, message: msg }
   }
 }

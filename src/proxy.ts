@@ -1,6 +1,20 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 
+function getSafeRedirectUrl(target: string | null): string {
+  if (!target) return '/dashboard'
+  const trimmed = target.trim()
+  if (
+    !trimmed.startsWith('/') ||
+    trimmed.startsWith('//') ||
+    trimmed.startsWith('/\\') ||
+    trimmed.includes('://')
+  ) {
+    return '/dashboard'
+  }
+  return trimmed
+}
+
 export async function proxy(request: NextRequest) {
   const { supabaseResponse, user } = await updateSession(request)
   const pathname = request.nextUrl.pathname
@@ -25,8 +39,9 @@ export async function proxy(request: NextRequest) {
 
   // 2. Authenticated users visiting login or sign-up
   if (user && (pathname === '/login' || pathname === '/sign-up')) {
-    const redirectUrl = request.nextUrl.searchParams.get('redirect') || '/dashboard'
-    const redirectResponse = NextResponse.redirect(new URL(redirectUrl, request.url))
+    const rawRedirect = request.nextUrl.searchParams.get('redirect')
+    const safeRedirect = getSafeRedirectUrl(rawRedirect)
+    const redirectResponse = NextResponse.redirect(new URL(safeRedirect, request.url))
     supabaseResponse.cookies.getAll().forEach((cookie) => {
       redirectResponse.cookies.set(cookie.name, cookie.value, cookie)
     })

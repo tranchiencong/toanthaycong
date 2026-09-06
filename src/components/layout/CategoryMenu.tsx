@@ -109,7 +109,7 @@ export function CategoryMenu({
 
   return (
     <div
-      className="relative"
+      className="relative flex items-center"
       ref={containerRef}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -118,17 +118,17 @@ export function CategoryMenu({
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors cursor-pointer select-none ${
+        className={`inline-flex items-center gap-1.5 px-3 h-9 text-sm font-medium transition-colors cursor-pointer select-none ${
           isOpen
             ? 'text-blue-900 bg-gray-50'
             : 'text-gray-700 hover:text-blue-900 hover:bg-gray-50'
         }`}
         aria-expanded={isOpen}
       >
-        <LayoutGrid className="h-4 w-4 text-blue-900" />
+        <LayoutGrid className="h-4 w-4 text-blue-900 shrink-0" />
         <span>Danh mục khóa học</span>
         <ChevronDown
-          className={`h-3.5 w-3.5 text-gray-400 transition-transform duration-150 ${
+          className={`h-3.5 w-3.5 text-gray-400 shrink-0 transition-transform duration-150 ${
             isOpen ? 'rotate-180 text-blue-900' : ''
           }`}
         />

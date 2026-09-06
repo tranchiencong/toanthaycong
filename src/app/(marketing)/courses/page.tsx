@@ -5,6 +5,21 @@ import { BookOpen, ArrowRight } from 'lucide-react'
 import { CourseFilters } from './CourseFilters'
 type CourseWhereInput = NonNullable<Parameters<typeof prisma.course.findMany>[0]>['where']
 
+export const metadata = {
+  title: 'Khóa Học Toán Trực Tuyến Lớp 10, 11, 12 | Luyện Thi THPT',
+  description:
+    'Danh sách các khóa học Toán trực tuyến từ cơ bản đến nâng cao 9+ của Thầy Trần Chiến Công. Bám sát chương trình GDPT mới nhất.',
+  alternates: {
+    canonical: '/courses',
+  },
+  openGraph: {
+    title: 'Khóa Học Toán Trực Tuyến Lớp 10, 11, 12 | Toán Thầy Công',
+    description:
+      'Lộ trình học tập môn Toán vững chắc từ bản chất, giúp học sinh bứt phá điểm 9+ trong mọi kỳ thi.',
+    url: '/courses',
+  },
+}
+
 // Trang này sẽ render dynamic vì nó phụ thuộc vào searchParams
 export const dynamic = 'force-dynamic'
 
@@ -80,6 +95,15 @@ export default async function CoursesPage({
 
           {/* Cột phải: Lưới danh sách khóa học */}
           <div className="flex-1">
+            <div className="mb-6">
+              <h1 className="text-2xl sm:text-3xl font-bold text-blue-900 tracking-tight mb-1">
+                Danh sách khóa học Toán trực tuyến
+              </h1>
+              <p className="text-sm text-gray-500">
+                Lộ trình học tập toàn diện từ nền tảng đến vận dụng cao 9+ bám sát cấu trúc đề thi.
+              </p>
+            </div>
+
             {/* Thanh công cụ Sorting */}
             <div className="flex items-center justify-between bg-white p-4 border border-slate-200/90 mb-6 shadow-2xs">
               <span className="text-sm font-medium text-slate-600">

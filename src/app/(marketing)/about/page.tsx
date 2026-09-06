@@ -66,17 +66,17 @@ export default function AboutPage() {
               </div>
               
               <p className="text-gray-600 leading-relaxed text-sm sm:text-base">
-                Với hơn 10 năm kinh nghiệm trực tiếp giảng dạy và luyện thi Toán THPT Chuyên, THPT Quốc Gia và Đánh giá năng lực, Thầy Công đã đồng hành cùng hàng ngàn học sinh đỗ vào các trường đại học hàng đầu như Ngoại Thương, Bách Khoa, Kinh Tế Quốc Dân, Y Hà Nội.
+                Với hơn 5 năm kinh nghiệm trực tiếp giảng dạy Toán THCS & THPT, luyện thi vào 10 và luyện thi THPT Quốc Gia, Thầy Công đã đồng hành cùng hơn 500 học sinh xây dựng tư duy logic vững chắc, bứt phá điểm số và đỗ vào các trường Chuyên, trường Đại học hàng đầu.
               </p>
               
               {/* Stats - Clean Minimal Grid */}
               <div className="grid grid-cols-3 gap-4 pt-2 border-t border-b border-gray-100 py-4">
                 <div>
-                  <div className="text-2xl sm:text-3xl font-bold text-blue-900">10+</div>
+                  <div className="text-2xl sm:text-3xl font-bold text-blue-900">5+</div>
                   <div className="text-xs text-gray-500 mt-0.5">Năm kinh nghiệm</div>
                 </div>
                 <div>
-                  <div className="text-2xl sm:text-3xl font-bold text-blue-900">10.000+</div>
+                  <div className="text-2xl sm:text-3xl font-bold text-blue-900">500+</div>
                   <div className="text-xs text-gray-500 mt-0.5">Học sinh theo học</div>
                 </div>
                 <div>

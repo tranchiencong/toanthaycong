@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
@@ -5,6 +6,54 @@ import Link from 'next/link'
 import { ArrowLeft, BookOpen, Clock, PlayCircle, Lock, Users, CheckCircle2, ArrowRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { ActivationForm } from './ActivationForm'
+import { JsonLd } from '@/components/seo/JsonLd'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}): Promise<Metadata> {
+  const { slug } = await params
+  const course = await prisma.course.findUnique({
+    where: { slug, isPublished: true },
+    include: {
+      grade: true,
+    },
+  })
+
+  if (!course) {
+    return {
+      title: 'Khóa học không tồn tại',
+    }
+  }
+
+  const title = `${course.title} - ${course.grade.name}`
+  const description =
+    course.description && course.description.length > 155
+      ? `${course.description.slice(0, 152)}...`
+      : course.description || 'Khóa học Toán chất lượng cao cùng Thầy Trần Chiến Công.'
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `/courses/${slug}`,
+    },
+    openGraph: {
+      title: `${title} | Toán Thầy Công`,
+      description,
+      type: 'article',
+      url: `/courses/${slug}`,
+      images: ['/images/thumbnail-v2.jpg'],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${title} | Toán Thầy Công`,
+      description,
+      images: ['/images/thumbnail-v2.jpg'],
+    },
+  }
+}
 
 export default async function CourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -58,8 +107,55 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
   const nextLessonOrder = nextLesson ? nextLesson.orderNum : 1
   const progressPercent = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0
 
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://toanthaycong.com'
+
+  const courseSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Course',
+    name: course.title,
+    description: course.description || course.title,
+    provider: {
+      '@type': 'EducationalOrganization',
+      name: 'Toán Thầy Công',
+      sameAs: baseUrl,
+    },
+    instructor: {
+      '@type': 'Person',
+      name: course.teacher.fullName,
+    },
+    inLanguage: 'vi',
+    educationalLevel: course.grade.name,
+    image: `${baseUrl}/images/thumbnail-v2.jpg`,
+  }
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Trang chủ',
+        item: baseUrl,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Khóa học',
+        item: `${baseUrl}/courses`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: course.title,
+        item: `${baseUrl}/courses/${course.slug}`,
+      },
+    ],
+  }
+
   return (
     <div className="relative bg-white min-h-screen pb-24 overflow-hidden">
+      <JsonLd data={[courseSchema, breadcrumbSchema]} />
       {/* Math Caro Grid Background */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
 

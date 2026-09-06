@@ -28,7 +28,7 @@ export default async function Home() {
             <div className="max-w-2xl">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-gray-100 text-gray-800 text-xs font-bold uppercase tracking-widest mb-6">
                 <span className="flex h-1.5 w-1.5 bg-purple-600 motion-safe:animate-pulse"></span>
-                10.000+ Học Sinh
+                500+ Học Sinh
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-[3.5rem] font-bold text-blue-900 leading-[1.2] mb-6 tracking-tight">
                 Toán Thầy Công. <br className="hidden md:block" />
@@ -80,7 +80,7 @@ export default async function Home() {
                 </div>
                 <div className="text-left">
                   <p className="text-xs font-bold text-slate-900 leading-none">Chinh phục 9+</p>
-                  <p className="text-[10px] text-slate-500 font-medium mt-0.5">Hơn 10.000+ Học sinh</p>
+                  <p className="text-[10px] text-slate-500 font-medium mt-0.5">500+ Học sinh</p>
                 </div>
               </div>
 
@@ -221,29 +221,29 @@ export default async function Home() {
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-extrabold text-blue-900 mb-4 tracking-tight">Học viên nói gì?</h2>
             <p className="text-slate-600 text-lg font-normal mx-auto max-w-2xl">
-              Hàng ngàn học sinh đã thay đổi tư duy và bứt phá điểm số sau khi tham gia lộ trình học tập.
+              Hơn 500 học sinh THCS & THPT đã thay đổi tư duy và bứt phá điểm số sau khi tham gia lộ trình học tập.
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             {[
               {
-                quote: "Em từng rất sợ hình học không gian, nhưng phương pháp trực quan 3D của thầy đã giúp em nhìn ra vấn đề ngay lập tức. Đề thi năm nay em tự tin 9+.",
+                quote: "Em từng rất sợ hình học, nhưng phương pháp trực quan của thầy đã giúp em nhìn ra vấn đề ngay lập tức. Đề thi năm nay em tự tin 9+.",
                 author: "Nguyễn Tuấn Anh",
-                school: "THPT Chuyên KHTN",
-                score: "Toán 9.2 ĐGNL"
+                school: "THPT Lục Nam",
+                score: "Học sinh lớp 10"
               },
               {
                 quote: "Không giải mẹo, học đến đâu chắc đến đấy. Lộ trình của thầy giúp em tiết kiệm rất nhiều thời gian ôn thi vì chỉ cần học đúng trọng tâm bản chất.",
                 author: "Trần Minh Châu",
-                school: "THPT Chu Văn An",
-                score: "Toán 9.6 THPT QG"
+                school: "THPT Phương Sơn",
+                score: "Học sinh lớp 10"
               },
               {
-                quote: "Điều em thích nhất là môi trường học thuật nghiêm túc. Các anh chị trợ giảng hỗ trợ 24/7 siêu nhiệt tình mỗi khi em kẹt bài khó.",
+                quote: "Điều em thích nhất là môi trường học nghiêm túc. Các thầy/cô trợ giảng hỗ trợ 24/7 siêu nhiệt tình mỗi khi em gặp khó.",
                 author: "Lê Hoàng Hải",
-                school: "THPT Lương Thế Vinh",
-                score: "Học viên Lớp 11"
+                school: "THPT Lục Nam",
+                score: "Học sinh Lớp 11"
               }
             ].map((review, i) => (
               <div key={i} className="bg-white p-8 border border-slate-200/90 hover:border-purple-300 hover:shadow-md transition-all shadow-2xs relative flex flex-col justify-between">

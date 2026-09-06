@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ChevronDown } from 'lucide-react'
+import { JsonLd } from '@/components/seo/JsonLd'
 
 type FAQItem = {
   question: string
@@ -70,8 +71,22 @@ export default function FAQPage() {
       ? FAQS
       : FAQS.filter((f) => f.category === activeCategory)
 
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: FAQS.map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  }
+
   return (
     <div className="bg-white min-h-screen py-12 md:py-16">
+      <JsonLd data={faqSchema} />
       <div className="container mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         
         {/* Back Link */}

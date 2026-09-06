@@ -146,7 +146,7 @@ export function UserNav({
                       Chào mừng bạn đến với Toán Thầy Công!
                     </p>
                     <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
-                      Tài khoản của bạn đã được kích hoạt thành công. Hãy khám phá các bài giảng chất lượng cao nhé.
+                      Hãy khám phá các bài giảng chất lượng cao nhé.
                     </p>
                     <span className="text-[10px] text-slate-400 mt-1 block">Vừa xong</span>
                   </div>

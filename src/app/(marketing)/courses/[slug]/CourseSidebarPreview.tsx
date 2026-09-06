@@ -142,7 +142,7 @@ export function CourseSidebarPreview({
         </div>
 
         {/* Bottom Bar with Click Indicator */}
-        <div className="absolute bottom-0 inset-x-0 px-4 py-2.5 bg-gradient-to-t from-black/65 via-black/30 to-transparent flex items-center justify-between">
+        <div className="absolute bottom-0 inset-x-0 px-4 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-xs font-semibold text-white drop-shadow-sm">
             <span>Bấm để xem video học thử</span>
           </div>

@@ -84,9 +84,7 @@ export default async function DashboardPage() {
       {/* Welcome Banner */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 p-8 text-white shadow-xl">
         <div className="relative z-10 max-w-2xl">
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md px-3 py-1 text-xs font-semibold text-amber-300 mb-4 border border-white/10">
-            <span>Không gian bứt phá môn Toán</span>
-          </div>
+         
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
             Chào mừng trở lại, {user?.fullName || 'Học viên'}!
           </h1>
@@ -99,7 +97,7 @@ export default async function DashboardPage() {
               className="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 px-3.5 py-1.5 text-xs font-semibold text-white border border-white/15 backdrop-blur-md transition-colors shadow-xs"
             >
               <UserIcon className="h-3.5 w-3.5 text-blue-200" />
-              <span>Hồ sơ & Tài khoản học viên</span>
+              <span>Hồ sơ cá nhân</span>
             </Link>
           </div>
         </div>
@@ -307,7 +305,7 @@ export default async function DashboardPage() {
           <DashboardActivationCard />
 
           {/* Student Support Contact Card */}
-          <div className="rounded-2xl bg-gradient-to-br from-slate-900 to-blue-950 p-6 text-white shadow-sm space-y-4">
+          <div className="rounded-2xl bg-purple-900 p-6 text-white shadow-sm space-y-4">
             <h3 className="font-bold text-base flex items-center gap-2">
               <span>Hỗ trợ học tập 24/7</span>
             </h3>
@@ -321,7 +319,7 @@ export default async function DashboardPage() {
                 rel="noopener noreferrer"
                 className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 px-4 py-2.5 text-xs font-bold text-white transition-colors"
               >
-                <span>Tham gia nhóm Zalo hỏi bài</span>
+                <span>Nhắn tin Zalo trực tiếp</span>
                 <ArrowRight className="h-3.5 w-3.5" />
               </a>
             </div>

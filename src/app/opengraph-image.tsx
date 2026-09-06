@@ -56,17 +56,18 @@ export default async function Image() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '1000px' }}>
           <div
             style={{
+              display: 'flex',
+              flexDirection: 'column',
               fontSize: '64px',
               fontWeight: 900,
               lineHeight: 1.15,
               color: '#FFFFFF',
             }}
           >
-            Học Toán Từ Bản Chất
-            <br />
-            Chinh Phục Điểm 9+
+            <span>Học Toán Từ Bản Chất</span>
+            <span>Chinh Phục Điểm 9+</span>
           </div>
-          <div style={{ fontSize: '24px', color: '#94A3B8', lineHeight: 1.4 }}>
+          <div style={{ display: 'flex', fontSize: '24px', color: '#94A3B8', lineHeight: 1.4 }}>
             Nền tảng học Toán THCS & THPT trực tuyến cùng Thầy Trần Chiến Công. Lộ trình bài bản bám sát cấu trúc đề thi.
           </div>
         </div>

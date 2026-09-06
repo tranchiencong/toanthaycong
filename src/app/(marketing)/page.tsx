@@ -273,7 +273,7 @@ export default async function Home() {
       {/* CTA Section */}
       <section className="py-24 bg-blue-900 border-t border-blue-950">
         <div className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6 tracking-tight">Xây dựng nền tảng. Chinh phục đỉnh cao.</h2>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-6 tracking-tight">Xây dựng nền tảng</h2>
           <p className="text-blue-100/80 text-lg md:text-xl mb-12 max-w-2xl mx-auto font-normal">
             Tham gia cộng đồng học thuật chuyên nghiệp nhất ngay hôm nay. Trải nghiệm phương pháp tư duy mới.
           </p>

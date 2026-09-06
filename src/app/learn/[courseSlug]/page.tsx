@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { VideoPlayer } from './VideoPlayer'
 import { LessonTabs } from './LessonTabs'
@@ -137,36 +137,16 @@ export default async function CourseLearnPage({
   }
 
   const isTeacherOrAdmin = currentProfile?.role === 'TEACHER' || currentProfile?.role === 'ADMIN'
-  const hasAccess = isEnrolled || activeLesson.isPreview || isTeacherOrAdmin
 
-  // 5. Block access if lesson is private and user is not authorized
-  if (!hasAccess) {
-    return (
-      <div className="relative flex-1 flex items-center justify-center bg-white p-8">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
-        <div className="relative max-w-md w-full bg-white border border-slate-200/90 p-8 text-center shadow-md">
-          <ShieldAlert className="h-12 w-12 text-purple-600 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-blue-900 mb-2">Bài học này yêu cầu quyền truy cập</h2>
-          <p className="text-slate-600 text-sm mb-6 leading-relaxed">
-            Bạn cần kích hoạt mã khóa học hoặc đăng ký khóa học để mở khóa toàn bộ bài giảng và tài liệu đính kèm.
-          </p>
-          <div className="flex flex-col gap-3">
-            <Link
-              href={`/courses/${courseSlug}`}
-              className="w-full bg-blue-900 text-white font-bold py-3 text-sm hover:bg-purple-600 transition-colors shadow-xs"
-            >
-              Kích hoạt / Đăng ký khóa học
-            </Link>
-            <Link
-              href="/dashboard"
-              className="text-xs text-slate-500 hover:text-purple-600 transition-colors underline"
-            >
-              Về trang cá nhân của tôi
-            </Link>
-          </div>
-        </div>
-      </div>
-    )
+  // 5. Strict Gatekeeper: Only enrolled students or teachers/admins can enter the LMS learning room
+  if (!isEnrolled && !isTeacherOrAdmin) {
+    if (activeLesson.isPreview) {
+      // Direct guest to course detail page and automatically open the preview modal
+      redirect(`/courses/${courseSlug}?preview=${activeLesson.orderNum}`)
+    } else {
+      // Direct guest to course detail page with unauthorized notice
+      redirect(`/courses/${courseSlug}?unauthorized=1`)
+    }
   }
 
   return (

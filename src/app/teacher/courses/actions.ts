@@ -260,6 +260,43 @@ export async function deleteChapterAction(chapterId: string, courseId: string) {
   }
 }
 
+// 5b. Update Chapter
+export async function updateChapterAction(
+  chapterId: string,
+  courseId: string,
+  _prevState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  let course: { id: string; slug: string }
+  try {
+    const user = await verifyTeacherOrAdmin()
+    course = await verifyCourseOwnership(courseId, user)
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Lỗi xác thực'
+    return { success: false, message: msg }
+  }
+
+  const title = (formData.get('title') as string || '').trim()
+  if (!title) {
+    return { success: false, message: 'Vui lòng nhập tên chương.' }
+  }
+
+  try {
+    await prisma.chapter.update({
+      where: { id: chapterId },
+      data: { title },
+    })
+
+    revalidatePath(`/teacher/courses/${courseId}/curriculum`)
+    revalidatePath(`/learn/${course.slug}`)
+    revalidatePath(`/courses/${course.slug}`)
+    return { success: true, message: 'Đã cập nhật tên chương.' }
+  } catch (error) {
+    console.error('Error updating chapter:', error)
+    return { success: false, message: 'Không thể cập nhật chương.' }
+  }
+}
+
 // 6. Create Lesson
 export async function createLessonAction(
   courseId: string,
@@ -333,6 +370,58 @@ export async function deleteLessonAction(lessonId: string, courseId: string) {
     console.error('Error deleting lesson:', error)
     const msg = error instanceof Error ? error.message : 'Không thể xóa bài giảng.'
     return { success: false, message: msg }
+  }
+}
+
+// 7b. Update Lesson
+export async function updateLessonAction(
+  lessonId: string,
+  courseId: string,
+  _prevState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  let course: { id: string; slug: string }
+  try {
+    const user = await verifyTeacherOrAdmin()
+    course = await verifyCourseOwnership(courseId, user)
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Lỗi xác thực'
+    return { success: false, message: msg }
+  }
+
+  const title = (formData.get('title') as string || '').trim()
+  const rawYoutube = (formData.get('youtubeUrl') as string || '').trim()
+  const isPreview = formData.get('isPreview') === 'on'
+  const rawMinutes = parseInt(formData.get('durationMinutes') as string || '0', 10)
+  const durationMinutes = isNaN(rawMinutes) || rawMinutes < 0 ? 0 : Math.min(rawMinutes, 1440)
+
+  if (!title || !rawYoutube) {
+    return { success: false, message: 'Vui lòng nhập tiêu đề và link video YouTube.' }
+  }
+
+  const youtubeId = extractYouTubeId(rawYoutube)
+  if (!youtubeId) {
+    return { success: false, message: 'Mã hoặc link YouTube không hợp lệ.' }
+  }
+
+  try {
+    await prisma.lesson.update({
+      where: { id: lessonId },
+      data: {
+        title,
+        youtubeId,
+        isPreview,
+        durationSeconds: durationMinutes * 60,
+      },
+    })
+
+    revalidatePath(`/teacher/courses/${courseId}/curriculum`)
+    revalidatePath(`/learn/${course.slug}`)
+    revalidatePath(`/courses/${course.slug}`)
+    return { success: true, message: 'Đã cập nhật bài giảng thành công.' }
+  } catch (error) {
+    console.error('Error updating lesson:', error)
+    return { success: false, message: 'Không thể cập nhật bài giảng.' }
   }
 }
 

@@ -3,9 +3,11 @@ import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ArrowLeft, BookOpen, Clock, PlayCircle, Lock, Users, CheckCircle2, ArrowRight } from 'lucide-react'
+import { ArrowLeft, BookOpen, Clock, PlayCircle, Lock, Users, CheckCircle2, ArrowRight, ShieldAlert } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { ActivationForm } from './ActivationForm'
+import { CourseCurriculum } from './CourseCurriculum'
+import { CourseSidebarPreview } from './CourseSidebarPreview'
 import { JsonLd } from '@/components/seo/JsonLd'
 
 export async function generateMetadata({
@@ -55,8 +57,16 @@ export async function generateMetadata({
   }
 }
 
-export default async function CourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function CourseDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
   const { slug } = await params
+  const resolvedSearchParams = await searchParams
+  const isUnauthorized = resolvedSearchParams?.unauthorized === '1'
   
   const course = await prisma.course.findUnique({
     where: { slug, isPublished: true },
@@ -100,6 +110,8 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
   const isEnrolled = !!enrollment
 
   const allLessons = course.chapters.flatMap((c) => c.lessons)
+  const previewLessons = allLessons.filter((l) => l.isPreview)
+  const firstPreviewLesson = previewLessons[0] || null
   const totalLessons = allLessons.length
   const completedIds = new Set(enrollment?.completedLessons || [])
   const completedCount = allLessons.filter((l) => completedIds.has(l.id)).length
@@ -174,6 +186,20 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
           
           {/* Main Content (Left Column) */}
           <div className="lg:col-span-2 space-y-12">
+            {isUnauthorized && (
+              <div className="p-5 bg-amber-50 border border-amber-200 text-amber-900 flex items-start gap-3 shadow-2xs">
+                <ShieldAlert className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                <div className="text-xs space-y-1">
+                  <p className="font-bold text-sm text-amber-950">
+                    Phòng học LMS yêu cầu quyền truy cập
+                  </p>
+                  <p className="text-amber-800 leading-relaxed">
+                    Bạn cần kích hoạt khóa học để vào phòng học trực tuyến. Hãy nhập mã kích hoạt ở khung bên phải (hoặc bên dưới trên điện thoại), hoặc bấm vào các bài có nhãn <strong>&quot;Học thử&quot;</strong> để xem video miễn phí ngay tại trang này.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Course Header */}
             <div>
               <div className="flex items-center gap-2.5 mb-6">
@@ -226,151 +252,110 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
               </div>
             </div>
 
-            {/* Syllabus */}
-            <div>
-              <h2 className="text-2xl font-bold text-blue-900 mb-6 flex items-center gap-2.5">
-                <BookOpen className="h-6 w-6 text-purple-600" />
-                <span>Nội dung khóa học</span>
-              </h2>
-
-              <div className="border border-slate-200 shadow-2xs overflow-hidden">
-                {course.chapters.map((chapter, index) => (
-                  <div key={chapter.id} className={index !== 0 ? "border-t border-slate-200" : ""}>
-                    <div className="bg-slate-50/90 px-6 py-3.5 border-b border-slate-200 flex items-center justify-between">
-                      <h3 className="font-bold text-blue-950 text-sm">{chapter.title}</h3>
-                      <span className="text-xs text-slate-500 font-medium">{chapter.lessons.length} bài học</span>
-                    </div>
-
-                    <div className="bg-white divide-y divide-slate-100">
-                      {chapter.lessons.map((lesson) => {
-                        const isCompleted = completedIds.has(lesson.id)
-                        const canPlay = isEnrolled || lesson.isPreview
-                        
-                        const Content = (
-                          <div className={`flex items-center justify-between px-6 py-4 transition-colors ${canPlay ? "hover:bg-purple-50/30 cursor-pointer" : ""}`}>
-                            <div className="flex items-center gap-4">
-                              {isCompleted ? (
-                                <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
-                              ) : canPlay ? (
-                                <PlayCircle className="h-5 w-5 text-purple-600 shrink-0" />
-                              ) : (
-                                <Lock className="h-5 w-5 text-slate-400 shrink-0" />
-                              )}
-                              <span className={canPlay ? (isCompleted ? "text-slate-500 font-medium" : "text-slate-900 font-semibold hover:text-blue-900 transition-colors") : "text-slate-400"}>
-                                {lesson.title}
-                              </span>
-                              {isCompleted && (
-                                <span className="text-[10px] uppercase tracking-wider font-bold bg-blue-50 text-blue-800 border border-blue-200 px-2 py-0.5">Đã học</span>
-                              )}
-                              {lesson.isPreview && !isEnrolled && (
-                                <span className="text-[10px] uppercase tracking-wider font-bold bg-purple-50 text-purple-700 border border-purple-200 px-2 py-0.5">Học thử</span>
-                              )}
-                            </div>
-                            <div className="flex items-center text-xs text-slate-500 font-medium">
-                              <Clock className="h-3.5 w-3.5 mr-1 text-slate-400" />
-                              {Math.floor(lesson.durationSeconds / 60)} phút
-                            </div>
-                          </div>
-                        )
-
-                        return canPlay ? (
-                          <Link key={lesson.id} href={`/learn/${course.slug}?lesson=${lesson.orderNum}`} className="block">
-                            {Content}
-                          </Link>
-                        ) : (
-                          <div key={lesson.id}>
-                            {Content}
-                          </div>
-                        )
-                      })}
-                      {chapter.lessons.length === 0 && (
-                        <div className="px-6 py-4 text-xs text-slate-400 italic">Chưa có bài học nào.</div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            {/* Syllabus with Video Preview Modal */}
+            <CourseCurriculum
+              courseSlug={course.slug}
+              courseTitle={course.title}
+              chapters={course.chapters}
+              isEnrolled={isEnrolled}
+              completedIds={Array.from(completedIds)}
+              totalLessons={totalLessons}
+            />
           </div>
 
           {/* Sticky Sidebar (Right Column) */}
           <div className="lg:col-span-1">
             <div className="sticky top-24 space-y-6">
-              {/* Course Image */}
-              <div className="relative h-64 w-full bg-slate-100 border border-slate-200 overflow-hidden hidden lg:block shadow-xs">
-                <Image
-                  src="/images/thumbnail-v2.jpg"
-                  alt={course.title}
-                  fill
-                  sizes="(max-width: 1280px) 33vw, 384px"
-                  className="object-cover mix-blend-multiply opacity-90"
-                />
-              </div>
+              {/* Course Preview Video Thumbnail / Action Card */}
+              <CourseSidebarPreview
+                courseSlug={course.slug}
+                courseTitle={course.title}
+                firstPreviewLesson={
+                  firstPreviewLesson
+                    ? {
+                        id: firstPreviewLesson.id,
+                        title: firstPreviewLesson.title,
+                        slug: firstPreviewLesson.slug,
+                        youtubeId: firstPreviewLesson.youtubeId,
+                        orderNum: firstPreviewLesson.orderNum,
+                        durationSeconds: firstPreviewLesson.durationSeconds,
+                        chapterTitle: course.chapters.find((c) =>
+                          c.lessons.some((l) => l.id === firstPreviewLesson.id)
+                        )?.title,
+                      }
+                    : null
+                }
+                totalPreviewLessons={previewLessons.length}
+                isEnrolled={isEnrolled}
+                nextLessonOrder={nextLessonOrder}
+              />
 
               {/* Action Box */}
-              {isEnrolled ? (
-                <div className="bg-white border border-slate-200 shadow-sm p-6 space-y-5">
-                  <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-blue-900 bg-blue-50 border border-blue-200 px-2.5 py-0.5 uppercase tracking-wider">
-                      Đã sở hữu khóa học
-                    </span>
-                    <span className="text-xs font-bold text-blue-900">
-                      {progressPercent}%
-                    </span>
-                  </div>
+              <div id="activation-section" className="scroll-mt-28">
+                {isEnrolled ? (
+                  <div className="bg-white border border-slate-200 shadow-sm p-6 space-y-5">
+                    <div className="flex items-center justify-between">
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-blue-900 bg-blue-50 border border-blue-200 px-2.5 py-0.5 uppercase tracking-wider">
+                        Đã sở hữu khóa học
+                      </span>
+                      <span className="text-xs font-bold text-blue-900">
+                        {progressPercent}%
+                      </span>
+                    </div>
 
-                  <div>
-                    <h3 className="text-base font-bold text-blue-900">
-                      Tiến độ học tập của bạn
-                    </h3>
-                    <p className="text-xs text-slate-500 mt-1">
-                      Đã hoàn thành {completedCount}/{totalLessons} bài học
-                    </p>
-                    
-                    {/* Progress Bar with Blue to Purple Gradient */}
-                    <div className="mt-3 h-2 w-full bg-slate-100 overflow-hidden rounded-full">
-                      <div 
-                        className="h-full bg-gradient-to-r from-blue-900 to-purple-600 transition-all duration-500" 
-                        style={{ width: `${progressPercent}%` }}
-                      />
+                    <div>
+                      <h3 className="text-base font-bold text-blue-900">
+                        Tiến độ học tập của bạn
+                      </h3>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Đã hoàn thành {completedCount}/{totalLessons} bài học
+                      </p>
+                      
+                      {/* Progress Bar with Blue to Purple Gradient */}
+                      <div className="mt-3 h-2 w-full bg-slate-100 overflow-hidden rounded-full">
+                        <div 
+                          className="h-full bg-gradient-to-r from-blue-900 to-purple-600 transition-all duration-500" 
+                          style={{ width: `${progressPercent}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {nextLesson && (
+                      <div className="bg-blue-50/50 border border-blue-100 p-3.5 space-y-1">
+                        <p className="text-[11px] uppercase tracking-wider text-purple-700 font-bold">
+                          {completedCount === 0 ? 'Bắt đầu với bài học' : 'Bài học tiếp theo'}
+                        </p>
+                        <p className="text-xs font-bold text-blue-950 line-clamp-1">
+                          Bài {nextLesson.orderNum}: {nextLesson.title}
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="pt-1 space-y-2.5">
+                      <Link 
+                        href={`/learn/${course.slug}?lesson=${nextLessonOrder}`}
+                        className="w-full inline-flex items-center justify-center gap-2 bg-blue-900 text-white font-bold py-3.5 px-4 hover:bg-purple-600 transition-colors shadow-xs"
+                      >
+                        <span>{completedCount === 0 ? 'Bắt đầu học ngay' : 'Tiếp tục học ngay'}</span>
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+
+                      <Link
+                        href="/dashboard"
+                        className="w-full inline-flex items-center justify-center text-xs font-medium text-slate-500 hover:text-purple-600 py-1.5 transition-colors"
+                      >
+                        Quay về không gian học tập
+                      </Link>
                     </div>
                   </div>
-
-                  {nextLesson && (
-                    <div className="bg-blue-50/50 border border-blue-100 p-3.5 space-y-1">
-                      <p className="text-[11px] uppercase tracking-wider text-purple-700 font-bold">
-                        {completedCount === 0 ? 'Bắt đầu với bài học' : 'Bài học tiếp theo'}
-                      </p>
-                      <p className="text-xs font-bold text-blue-950 line-clamp-1">
-                        Bài {nextLesson.orderNum}: {nextLesson.title}
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="pt-1 space-y-2.5">
-                    <Link 
-                      href={`/learn/${course.slug}?lesson=${nextLessonOrder}`}
-                      className="w-full inline-flex items-center justify-center gap-2 bg-blue-900 text-white font-bold py-3.5 px-4 hover:bg-purple-600 transition-colors shadow-xs"
-                    >
-                      <span>{completedCount === 0 ? 'Bắt đầu học ngay' : 'Tiếp tục học ngay'}</span>
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-
-                    <Link
-                      href="/dashboard"
-                      className="w-full inline-flex items-center justify-center text-xs font-medium text-slate-500 hover:text-purple-600 py-1.5 transition-colors"
-                    >
-                      Quay về không gian học tập
-                    </Link>
-                  </div>
-                </div>
-              ) : (
-                <ActivationForm 
-                  courseId={course.id} 
-                  courseSlug={course.slug} 
-                  courseTitle={course.title} 
-                />
-              )}
+                ) : (
+                  <ActivationForm 
+                    courseId={course.id} 
+                    courseSlug={course.slug} 
+                    courseTitle={course.title} 
+                  />
+                )}
+              </div>
               
               <div className="bg-white p-6 border border-slate-200 text-sm shadow-2xs">
                 <h4 className="font-bold text-blue-900 mb-4 uppercase tracking-wider text-xs flex items-center gap-2">

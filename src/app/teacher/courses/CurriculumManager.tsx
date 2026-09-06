@@ -1,10 +1,12 @@
 'use client'
 
-import { useState, useTransition, useActionState } from 'react'
+import { useState, useTransition, useActionState, useEffect } from 'react'
 import {
   createChapterAction,
+  updateChapterAction,
   deleteChapterAction,
   createLessonAction,
+  updateLessonAction,
   deleteLessonAction,
   createResourceAction,
   deleteResourceAction,
@@ -23,6 +25,7 @@ import {
   ExternalLink,
   Layers,
   Sparkles,
+  Pencil,
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -69,7 +72,9 @@ export function CurriculumManager({
   })
 
   const [activeAddLessonChapterId, setActiveAddLessonChapterId] = useState<string | null>(null)
+  const [activeEditChapterId, setActiveEditChapterId] = useState<string | null>(null)
   const [activeAddResourceLessonId, setActiveAddResourceLessonId] = useState<string | null>(null)
+  const [activeEditLessonId, setActiveEditLessonId] = useState<string | null>(null)
 
   const toggleChapter = (id: string) => {
     setOpenChapters((prev) => ({ ...prev, [id]: !prev[id] }))
@@ -158,6 +163,20 @@ export function CurriculumManager({
                     <button
                       type="button"
                       onClick={() =>
+                        setActiveEditChapterId(
+                          activeEditChapterId === chapter.id ? null : chapter.id
+                        )
+                      }
+                      className="inline-flex items-center gap-1 bg-white border border-slate-200 hover:border-blue-900 hover:text-blue-900 px-2 py-1 text-xs font-semibold text-slate-700 transition-colors shadow-2xs"
+                      title="Đổi tên chương"
+                    >
+                      <Pencil className="h-3 w-3 text-slate-500" />
+                      <span>Sửa</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
                         setActiveAddLessonChapterId(
                           activeAddLessonChapterId === chapter.id ? null : chapter.id
                         )
@@ -175,6 +194,15 @@ export function CurriculumManager({
                     />
                   </div>
                 </div>
+
+                {/* Edit Chapter Form (if toggled) */}
+                {activeEditChapterId === chapter.id && (
+                  <EditChapterForm
+                    chapter={chapter}
+                    courseId={course.id}
+                    onClose={() => setActiveEditChapterId(null)}
+                  />
+                )}
 
                 {/* Chapter Body: Lessons List */}
                 {isOpen && (
@@ -241,6 +269,20 @@ export function CurriculumManager({
                                   + Tài liệu ({lesson.resources.length})
                                 </button>
 
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setActiveEditLessonId(
+                                      activeEditLessonId === lesson.id ? null : lesson.id
+                                    )
+                                  }
+                                  className="inline-flex items-center gap-1 text-xs font-semibold text-slate-600 hover:text-blue-900 px-2 py-1 border border-slate-200 hover:bg-slate-50 transition-colors"
+                                  title="Chỉnh sửa bài giảng"
+                                >
+                                  <Pencil className="h-3 w-3 text-slate-500" />
+                                  <span>Sửa</span>
+                                </button>
+
                                 <DeleteLessonButton
                                   lessonId={lesson.id}
                                   courseId={course.id}
@@ -248,6 +290,15 @@ export function CurriculumManager({
                                 />
                               </div>
                             </div>
+
+                            {/* Edit Lesson Form (if toggled) */}
+                            {activeEditLessonId === lesson.id && (
+                              <EditLessonForm
+                                lesson={lesson}
+                                courseId={course.id}
+                                onClose={() => setActiveEditLessonId(null)}
+                              />
+                            )}
 
                             {/* Resource Form (if toggled) */}
                             {activeAddResourceLessonId === lesson.id && (
@@ -649,5 +700,219 @@ function DeleteResourceButton({
         <Trash2 className="h-3 w-3" />
       )}
     </button>
+  )
+}
+
+// 7. Edit Chapter Form Component
+function EditChapterForm({
+  chapter,
+  courseId,
+  onClose,
+}: {
+  chapter: ChapterItem
+  courseId: string
+  onClose: () => void
+}) {
+  const boundAction = updateChapterAction.bind(null, chapter.id, courseId)
+  const [state, formAction, isPending] = useActionState<ActionState, FormData>(
+    boundAction,
+    {}
+  )
+
+  useEffect(() => {
+    if (state.success) {
+      const timer = setTimeout(() => {
+        onClose()
+      }, 600)
+      return () => clearTimeout(timer)
+    }
+  }, [state.success, onClose])
+
+  return (
+    <div className="bg-slate-100/90 border-b border-slate-200 p-3.5 space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+          <Pencil className="h-3.5 w-3.5 text-blue-900" />
+          <span>Đổi tên chương</span>
+        </span>
+        <button
+          type="button"
+          onClick={onClose}
+          className="text-xs text-slate-400 hover:text-slate-700 cursor-pointer"
+        >
+          Đóng
+        </button>
+      </div>
+
+      {state.message && (
+        <p
+          className={`text-xs ${
+            state.success ? 'text-emerald-700 font-medium' : 'text-rose-600'
+          }`}
+        >
+          {state.message}
+        </p>
+      )}
+
+      <form action={formAction} className="flex flex-col sm:flex-row gap-2">
+        <input
+          name="title"
+          type="text"
+          required
+          defaultValue={chapter.title}
+          placeholder="Nhập tên chương mới..."
+          className="flex-1 border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-900 focus:border-blue-900 focus:outline-none"
+        />
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900 border border-slate-300 bg-white cursor-pointer"
+          >
+            Hủy
+          </button>
+          <button
+            type="submit"
+            disabled={isPending}
+            className="inline-flex items-center gap-1.5 bg-blue-900 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-blue-800 transition-colors disabled:opacity-50 cursor-pointer"
+          >
+            {isPending && <Loader2 className="h-3 w-3 animate-spin" />}
+            <span>Lưu tên chương</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  )
+}
+
+// 8. Edit Lesson Form Component
+function EditLessonForm({
+  lesson,
+  courseId,
+  onClose,
+}: {
+  lesson: LessonItem
+  courseId: string
+  onClose: () => void
+}) {
+  const boundAction = updateLessonAction.bind(null, lesson.id, courseId)
+  const [state, formAction, isPending] = useActionState<ActionState, FormData>(
+    boundAction,
+    {}
+  )
+
+  useEffect(() => {
+    if (state.success) {
+      const timer = setTimeout(() => {
+        onClose()
+      }, 700)
+      return () => clearTimeout(timer)
+    }
+  }, [state.success, onClose])
+
+  return (
+    <div className="border border-blue-300 p-4 space-y-3 mt-2 shadow-2xs">
+      <div className="flex items-center justify-between">
+        <h5 className="text-xs font-bold text-amber-950 uppercase tracking-wider flex items-center gap-1.5">
+          <Pencil className="h-3.5 w-3.5 text-amber-800" />
+          <span>Chỉnh sửa bài giảng (Bài {lesson.orderNum})</span>
+        </h5>
+        <button
+          type="button"
+          onClick={onClose}
+          className="text-xs text-slate-400 hover:text-slate-700 cursor-pointer"
+        >
+          Đóng
+        </button>
+      </div>
+
+      {state.message && (
+        <p
+          className={`text-xs ${
+            state.success ? 'text-emerald-700 font-semibold' : 'text-rose-600'
+          }`}
+        >
+          {state.message}
+        </p>
+      )}
+
+      <form action={formAction} className="space-y-3">
+        <div>
+          <label className="block text-[11px] font-bold text-slate-700 mb-1">
+            Tiêu đề bài học <span className="text-rose-500">*</span>
+          </label>
+          <input
+            name="title"
+            type="text"
+            required
+            defaultValue={lesson.title}
+            placeholder="Ví dụ: Bài 1: Khái niệm Mệnh đề toán học"
+            className="w-full border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-900 focus:border-blue-900 focus:outline-none"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label className="block text-[11px] font-bold text-slate-700 mb-1">
+              Link YouTube hoặc ID video <span className="text-rose-500">*</span>
+            </label>
+            <input
+              name="youtubeUrl"
+              type="text"
+              required
+              defaultValue={lesson.youtubeId}
+              placeholder="https://www.youtube.com/watch?v=... hoặc ID"
+              className="w-full border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-900 focus:border-blue-900 focus:outline-none font-mono"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-bold text-slate-700 mb-1">
+              Thời lượng dự kiến (phút)
+            </label>
+            <input
+              name="durationMinutes"
+              type="number"
+              min={0}
+              defaultValue={Math.round(lesson.durationSeconds / 60) || ''}
+              placeholder="Ví dụ: 45"
+              className="w-full border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-900 focus:border-blue-900 focus:outline-none"
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+          <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              name="isPreview"
+              defaultChecked={lesson.isPreview}
+              className="h-3.5 w-3.5 rounded-none border-slate-300 text-blue-900 focus:ring-blue-900"
+            />
+            <span className="text-xs font-semibold text-slate-700">
+              Cho phép học thử miễn phí (Preview)
+            </span>
+          </label>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-900 border border-slate-200 bg-white hover:bg-slate-50 transition-colors cursor-pointer"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              disabled={isPending}
+              className="inline-flex items-center gap-1.5 bg-blue-900 px-4 py-1.5 text-xs font-bold text-white hover:bg-blue-800 transition-colors disabled:opacity-50 cursor-pointer shadow-2xs"
+            >
+              {isPending && <Loader2 className="h-3 w-3 animate-spin" />}
+              <span>Lưu thay đổi</span>
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
   )
 }
